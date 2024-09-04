@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/layout/sidebar.css">
+    <link rel="stylesheet" href="/static/css/layout/topbar.css">
+    <link rel="stylesheet" href="/static/css/admin/dashboard.css">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+
+    {% include 'layout/sidebar.html' %}
+
+    {% include 'layout/topbar.html' %}
+
+    <div class="main-content">
+        <div class="dashboard-cards">
+            <div class="card">
+                <a href="/admin/departments">
+                    <div class="card-title">Departments</div>
+                    <div class="card-value">{{ department_count }}</div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

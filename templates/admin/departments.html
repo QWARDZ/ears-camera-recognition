@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Departments</title>
+    <link rel="stylesheet" href="/static/css/admin/departments.css">
+    <link rel="stylesheet" href="/static/css/layout/sidebar.css">
+    <link rel="stylesheet" href="/static/css/layout/topbar.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+</head>
+<body>
+
+    {% include 'layout/sidebar.html' %}
+
+    {% include 'layout/topbar.html' %}
+
+    <div class="main-container">
+        <div class="header-section">
+            <h1>Manage Departments</h1>
+            <button class="btn btn-primary" onclick="showAddDepartmentForm()">+ Add New Department</button>
+        </div>
+
+        <div class="table-container">
+            <table id="departmentTable" class="display">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Department Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for department in departments %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ department[0] }}</td>
+                        <td>{{ department[1] }}</td>
+                        <td>
+                            <button class="btn btn-primary" onclick="editDepartment('{{ department[0] }}', '{{ department[1] }}')">Edit</button>
+                            <form method="POST" action="/admin/departments/delete/{{ department[0] }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div id="departmentModal" class="modal">
+        <div class="modal-content">
+            <h2>Department Master Data</h2>
+            <form method="POST" action="/admin/departments">
+                <input type="hidden" id="department_id" name="department_id"> 
+                <div class="form-group">
+                    <label for="department_name">Department Name</label>
+                    <input type="text" id="department_name" name="department_name" required>
+                </div>
+                <button type="submit" class="btn save-btn">Save</button>
+                <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="/static/js/admin/departments.js"></script>
+</body>
+</html>
