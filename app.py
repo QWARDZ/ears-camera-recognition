@@ -18,8 +18,9 @@ class EmployeeAttendance:
 
     def setup_routes(self):
         @self.app.route('/')
-        def index():
-            return redirect('/login')
+        def home():
+            # Render the home.html when visiting the root route
+            return render_template('home.html')
 
         @self.app.route('/login', methods=['GET', 'POST'])
         def login():
@@ -27,7 +28,7 @@ class EmployeeAttendance:
                 username = request.form['username']
                 password = request.form['password']
                 
-                
+                # Query to check the user's credentials and role
                 cur = self.mysql.connection.cursor()
                 cur.execute("SELECT role FROM users WHERE username=%s AND password=%s", (username, password))
                 user = cur.fetchone()
@@ -50,7 +51,7 @@ class EmployeeAttendance:
         def logout():
             session.pop('username', None)
             session.pop('role', None)
-            return redirect('/login')
+            return redirect('/')
 
         # Admin Dashboard Route
         @self.app.route('/admin/dashboard')
@@ -110,7 +111,7 @@ class EmployeeAttendance:
                 cur.close()
                 return redirect('/admin/departments')
             else:
-                return redirect('/login')
+                return redirect('/login')      
 
         # Employee Dashboard Route
         @self.app.route('/employee/dashboard')

@@ -3,72 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/sidebar.css">
     <link rel="stylesheet" href="/static/css/topbar.css">
-    <link rel="stylesheet" href="/static/css/admin/dashboard.css">
     <title>Admin Dashboard</title>
 </head>
-
-<div class="top-bar">
-    <div class="user-info">
-        <span class="user-name">Admin</span>
-        <div class="user-avatar">
-            <img src="/static/images/admin-avatar.png" alt="Admin Avatar" id="userIcon">
-            <div class="dropdown-menu" id="dropdownMenu">
-                <a href="#" class="dropdown-item" id="logoutConfirmLink">Logout</a>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="user-info">
+            <span class="user-name">Admin</span>
+            <div class="user-avatar">
+                <img src="/static/images/admin-avatar.png" alt="Admin Avatar" id="userIcon">
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="#" class="dropdown-item" id="logoutConfirmLink">Logout</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div id="logoutModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Ready to Leave?</h2>
-        <p>Select "Logout" below if you are ready to end your current session.</p>
-        <div class="modal-actions">
-            <button class="btn cancel-btn">Cancel</button>
-            <a href="/logout" class="btn logout-btn">Logout</a>
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Ready to Leave?</h2>
+            <p>Select "Logout" below if you are ready to end your current session.</p>
+            <div class="modal-actions">
+                <button class="btn cancel-btn">Cancel</button>
+                <a href="/logout" class="btn logout-btn">Logout</a>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    var userIcon = document.getElementById("userIcon");
-    var dropdownMenu = document.getElementById("dropdownMenu");
-    var logoutConfirmLink = document.getElementById("logoutConfirmLink");
-    var logoutModal = document.getElementById("logoutModal");
-    var closeBtn = document.getElementsByClassName("close")[0];
-    var cancelBtn = document.getElementsByClassName("cancel-btn")[0];
+    <script>
+        // Dropdown and Modal Logic
+        var userIcon = document.getElementById("userIcon");
+        var dropdownMenu = document.getElementById("dropdownMenu");
+        var logoutConfirmLink = document.getElementById("logoutConfirmLink");
+        var logoutModal = document.getElementById("logoutModal");
+        var closeBtn = document.getElementsByClassName("close")[0];
+        var cancelBtn = document.getElementsByClassName("cancel-btn")[0];
 
-    userIcon.onclick = function() {
-        if (dropdownMenu.style.display === "block") {
-            dropdownMenu.style.display = "none";
-        } else {
-            dropdownMenu.style.display = "block";
+        userIcon.onclick = function() {
+            if (dropdownMenu.style.display === "block") {
+                dropdownMenu.style.display = "none";
+            } else {
+                dropdownMenu.style.display = "block";
+            }
         }
-    }
 
-    logoutConfirmLink.onclick = function(event) {
-        event.preventDefault();
-        logoutModal.style.display = "block";
-    }
-
-
-    closeBtn.onclick = function() {
-        logoutModal.style.display = "none";
-    }
-
-    cancelBtn.onclick = function() {
-        logoutModal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target !== userIcon && event.target !== dropdownMenu) {
-            dropdownMenu.style.display = "none";
+        logoutConfirmLink.onclick = function(event) {
+            event.preventDefault();
+            logoutModal.style.display = "block";
         }
-        if (event.target === logoutModal) {
+
+        closeBtn.onclick = function() {
             logoutModal.style.display = "none";
         }
-    }
-</script>
+
+        cancelBtn.onclick = function() {
+            logoutModal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target !== userIcon && event.target !== dropdownMenu) {
+                dropdownMenu.style.display = "none";
+            }
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

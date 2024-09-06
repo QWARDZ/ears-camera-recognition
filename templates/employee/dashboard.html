@@ -3,91 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/employee/dashboard.css">
+    <link rel="stylesheet" href="/static/css/layout/sidebar.css">
+    <link rel="stylesheet" href="/static/css/layout/topbar.css">
     <title>Employee Dashboard</title>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-logo">
-            <img src="/static/images/ears-logo.png" alt="EARS Logo">
-        </div>
-        <ul class="sidebar-nav">
-            <li class="sidebar-header">ATTENDANCE</li>
-            <li><a href="/employee/dashboard">Attendance Form</a></li>
-            <li><a href="#">History</a></li>
-            <li class="sidebar-header">PROFILE</li>
-            <li><a href="#">My Profile</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <div class="top-bar">
-            <div class="user-info">
-                <span class="user-name">Employee</span>
-                <div class="user-avatar">
-                    <img src="/static/images/admin-avatar.png" alt="Employee Avatar" id="userIcon">
-                    <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="#" class="dropdown-item" id="logoutConfirmLink">Logout</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include 'layout/sidebar-employee.html' %}
 
-
-    <div id="logoutModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Ready to Leave?</h2>
-            <p>Select "Logout" below if you are ready to end your current session.</p>
-            <div class="modal-actions">
-                <button class="btn cancel-btn">Cancel</button>
-                <a href="/logout" class="btn logout-btn">Logout</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        var userIcon = document.getElementById("userIcon");
-        var dropdownMenu = document.getElementById("dropdownMenu");
-        var logoutConfirmLink = document.getElementById("logoutConfirmLink");
-        var logoutModal = document.getElementById("logoutModal");
-        var closeBtn = document.getElementsByClassName("close")[0];
-        var cancelBtn = document.getElementsByClassName("cancel-btn")[0];
-
-
-        userIcon.onclick = function() {
-            if (dropdownMenu.style.display === "block") {
-                dropdownMenu.style.display = "none";
-            } else {
-                dropdownMenu.style.display = "block";
-            }
-        }
-
-
-        logoutConfirmLink.onclick = function(event) {
-            event.preventDefault(); 
-            logoutModal.style.display = "block";
-        }
-
-
-        closeBtn.onclick = function() {
-            logoutModal.style.display = "none";
-        }
-
-
-        cancelBtn.onclick = function() {
-            logoutModal.style.display = "none";
-        }
-
- 
-        window.onclick = function(event) {
-            if (event.target !== userIcon && event.target !== dropdownMenu) {
-                dropdownMenu.style.display = "none";
-            }
-            if (event.target === logoutModal) {
-                logoutModal.style.display = "none";
-            }
-        }
-    </script>
+    {% include 'layout/topbar.html' %}
 </body>
 </html>
