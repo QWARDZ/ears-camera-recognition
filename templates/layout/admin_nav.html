@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/layout/navigation.css">
+    <title> </title>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="hamburger" onclick="toggleHamburger(this)">
+            <div class="bar1"></div>
+            <div class="bar2"></div>
+            <div class="bar3"></div>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Admin</span>
+            <div class="user-avatar">
+                <img src="/static/images/admin-avatar.png" alt="Admin Avatar" id="userIcon">
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="#" class="dropdown-item" id="logoutConfirmLink">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <ul class="sidebar-nav">
+            <li class="sidebar-header">ADMIN</li>
+            <li><a href="/admin/dashboard">Dashboard</a></li>
+            <div class="section-divider"></div>
+            <li class="sidebar-header">MASTER</li>
+            <li><a href="/admin/departments">Department</a></li>
+            <li><a href="/admin/employee">Employee</a></li>
+            <li><a href="#">Location</a></li>
+            <li><a href="#">Users</a></li>
+            <div class="section-divider"></div> 
+            <li class="sidebar-header">REPORT</li>
+            <li><a href="#">Report</a></li>
+        </ul>
+    </div>
+
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Ready to Leave?</h2>
+            <p>Select "Logout" below if you are ready to end your current session.</p>
+            <div class="modal-actions">
+                <button class="btn cancel-btn">Cancel</button>
+                <a href="/logout" class="btn logout-btn">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dropdown and Modal Logic
+        var userIcon = document.getElementById("userIcon");
+        var dropdownMenu = document.getElementById("dropdownMenu");
+        var logoutConfirmLink = document.getElementById("logoutConfirmLink");
+        var logoutModal = document.getElementById("logoutModal");
+        var closeBtn = document.getElementsByClassName("close")[0];
+        var cancelBtn = document.getElementsByClassName("cancel-btn")[0];
+
+        userIcon.onclick = function() {
+            if (dropdownMenu.style.display === "block") {
+                dropdownMenu.style.display = "none";
+            } else {
+                dropdownMenu.style.display = "block";
+            }
+        }
+
+        logoutConfirmLink.onclick = function(event) {
+            event.preventDefault();
+            logoutModal.style.display = "block";
+        }
+
+        closeBtn.onclick = function() {
+            logoutModal.style.display = "none";
+        }
+
+        cancelBtn.onclick = function() {
+            logoutModal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target !== userIcon && event.target !== dropdownMenu) {
+                dropdownMenu.style.display = "none";
+            }
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none";
+            }
+        }
+
+        // Hamburger menu toggle
+        function toggleHamburger(element) {
+            element.classList.toggle("change");
+            var nav = document.querySelector('.sidebar-nav');
+            if (nav.style.display === "block") {
+                nav.style.display = "none";
+            } else {
+                nav.style.display = "block";
+            }
+        }
+
+        // Ensure sidebar visibility on resize
+        window.addEventListener('resize', function () {
+            var nav = document.querySelector('.sidebar-nav');
+            if (window.innerWidth > 768) {
+                nav.style.display = "block"; // Show sidebar on desktop
+            } else {
+                nav.style.display = "none"; // Hide sidebar on mobile
+            }
+        });
+
+        // Initial check on load
+        window.onload = function() {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar-nav').style.display = "block";
+            } else {
+                document.querySelector('.sidebar-nav').style.display = "none";
+            }
+        };
+    </script>
+</body>
+</html>

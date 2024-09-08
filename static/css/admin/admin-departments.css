@@ -1,3 +1,4 @@
+
 /* Global styles */
 body {
     font-family: 'Arial', sans-serif;
@@ -6,27 +7,31 @@ body {
     padding: 0;
 }
 
+/* Main container for the content */
 .main-container {
     padding: 20px;
-    background-color: #fff;
-    margin-left: 260px; /* Adjusted for sidebar */
+    background-color: #dbdada;
+    margin-left: 250px; /* Sidebar width accounted for */
 }
 
+/* Header section for title and button */
 .header-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap; /* Ensure proper alignment on smaller screens */
 }
 
 .header-section h1 {
     font-size: 24px;
     color: #343a40;
+    margin-bottom: 10px; /* Add space below title */
 }
 
 .btn-primary {
     background-color: #007bff;
-    color: #fff;
+    color: #e0c2c2;
     border: none;
     padding: 8px 12px;
     font-size: 14px;
@@ -42,6 +47,8 @@ body {
 /* Table styles */
 .table-container {
     margin-top: 20px;
+    width: 100%;
+    overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
 }
 
 table.dataTable {
@@ -50,12 +57,26 @@ table.dataTable {
     background-color: #fff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
+    table-layout: auto; /* Allows dynamic resizing */
 }
 
 th, td {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #dee2e6;
+}
+
+/* Specific Column Width Adjustments */
+th.col-small, td.col-small {
+    width: 50px; /* Width for # and ID */
+}
+
+th.col-wide, td.col-wide {
+    width: 40%; /* Wider width for Department Name */
+}
+
+th.col-medium, td.col-medium {
+    width: 20%; /* Medium width for Actions */
 }
 
 th {
@@ -113,7 +134,8 @@ td {
 .modal-content {
     background-color: #fff;
     padding: 20px;
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
     border-radius: 10px;
 }
 
@@ -149,7 +171,7 @@ input[type="text"] {
     margin-left: 10px;
 }
 
-/* Spacing adjustments */
+/* DataTables adjustments */
 .dataTables_wrapper .dataTables_length, 
 .dataTables_wrapper .dataTables_filter {
     margin-bottom: 15px;
@@ -175,16 +197,63 @@ input[type="text"] {
     float: right;
 }
 
+/* Mobile view and smaller screens adjustments */
 @media (max-width: 768px) {
+    /* Remove sidebar margin on smaller screens */
+    .main-container {
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    /* Stack title and button vertically on small screens */
     .header-section {
         flex-direction: column;
         align-items: flex-start;
+        width: 100%;        
+        position: relative;
+        
     }
-    
+
+    .header-section .btn-primary {
+        align-self: flex-end; /* Align button to the right */
+        margin-top: 5px; /* Add space above the button */
+    }
+
+    /* Table container: Allow scrolling on smaller screens */
+    .table-container {
+        margin-top: 10px;
+        overflow-x: scroll;
+    }
+
+    /* Adjust DataTables controls for small screens */
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter {
         float: none;
         text-align: center;
         margin-bottom: 10px;
+    }
+
+    /* Table layout adjustments for smaller screens */
+    table.dataTable {
+        width: 100%;
+        table-layout: auto; /* Ensure proper table layout */
+    }
+
+    th.col-small, td.col-small {
+        width: 30px; /* Adjust width for smaller screens */
+    }
+
+    th.col-wide, td.col-wide {
+        width: 50%; /* Adjust Department Name width */
+    }
+
+    th.col-medium, td.col-medium {
+        width: 20%; /* Adjust Actions width */
+    }
+
+    /* Smaller buttons on small screens */
+    .btn {
+        font-size: 10px;
+        padding: 5px 8px;
     }
 }

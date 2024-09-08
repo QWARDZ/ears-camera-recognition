@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Departments</title>
     <link rel="stylesheet" href="/static/css/admin/admin-departments.css">
-    <link rel="stylesheet" href="/static/css/layout/sidebar.css">
-    <link rel="stylesheet" href="/static/css/layout/topbar.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
 </head>
 <body>
 
-    {% include 'layout/sidebar-admin.html' %}
-
-    {% include 'layout/topbar.html' %}
+    {% include 'layout/admin_nav.html' %}
 
     <div class="main-container">
         <div class="header-section">
@@ -25,10 +21,10 @@
             <table id="departmentTable" class="display">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>ID</th>
-                        <th>Department Name</th>
-                        <th>Actions</th>
+                        <th class="col-small">#</th>
+                        <th class="col-small">ID</th>
+                        <th class="col-wide">Department Name</th>
+                        <th class="col-medium">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,12 +46,11 @@
         </div>
     </div>
 
-
     <div id="departmentModal" class="modal">
         <div class="modal-content">
             <h2>Department Master Data</h2>
             <form method="POST" action="/admin/departments">
-                <input type="hidden" id="department_id" name="department_id"> 
+                <input type="hidden" id="department_id" name="department_id">
                 <div class="form-group">
                     <label for="department_name">Department Name</label>
                     <input type="text" id="department_name" name="department_name" required>

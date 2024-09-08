@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/topbar.css">
-    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/layout/navigation.css">
+    <title> </title>
 </head>
 <body>
-    <!-- Top Bar -->
     <div class="top-bar">
+        <div class="hamburger" onclick="toggleHamburger(this)">
+            <div class="bar1"></div>
+            <div class="bar2"></div>
+            <div class="bar3"></div>
+        </div>
         <div class="user-info">
             <span class="user-name">Admin</span>
             <div class="user-avatar">
@@ -20,7 +24,20 @@
         </div>
     </div>
 
-    <!-- Logout Modal -->
+    <div class="sidebar">
+        <ul class="sidebar-nav">
+            <li class="sidebar-header">ATTENDANCE</li>
+            <li><a href="#">Attendance Form</a></li>
+            <li><a href="#">History</a></li>
+            <div class="section-divider"></div>
+            <li class="sidebar-header">PROFILE</li>
+            <li><a href="#">My Profile</a></li>
+            <div class="section-divider"></div> 
+            <li class="sidebar-header">REPORT</li>
+            <li><a href="#">Print Report</a></li>
+        </ul>
+    </div>
+
     <div id="logoutModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -71,6 +88,36 @@
                 logoutModal.style.display = "none";
             }
         }
+
+        // Hamburger menu toggle
+        function toggleHamburger(element) {
+            element.classList.toggle("change");
+            var nav = document.querySelector('.sidebar-nav');
+            if (nav.style.display === "block") {
+                nav.style.display = "none";
+            } else {
+                nav.style.display = "block";
+            }
+        }
+
+        // Ensure sidebar visibility on resize
+        window.addEventListener('resize', function () {
+            var nav = document.querySelector('.sidebar-nav');
+            if (window.innerWidth > 768) {
+                nav.style.display = "block"; // Show sidebar on desktop
+            } else {
+                nav.style.display = "none"; // Hide sidebar on mobile
+            }
+        });
+
+        // Initial check on load
+        window.onload = function() {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar-nav').style.display = "block";
+            } else {
+                document.querySelector('.sidebar-nav').style.display = "none";
+            }
+        };
     </script>
 </body>
 </html>
