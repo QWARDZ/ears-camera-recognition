@@ -3,8 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/layout/navigation.css">
     <title> </title>
+    <style>
+                /* General Styles */
+                body {
+            font-family: Arial, sans-serif;  
+            font-size: 16px;  
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #2c3e50;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-header {
+            font-size: 12px;  
+            text-transform: uppercase;
+            padding: 10px 20px;
+            color: #95a5a6;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-nav li {
+            padding: 8px 20px;
+        }
+
+        .sidebar-nav li a {
+            color: #ecf0f1;
+            font-size: 14px; 
+            display: block;
+            transition: background 0.3s, color 0.3s;
+            padding: 10px;
+            border-radius: 5px;
+            text-decoration: none; 
+        }
+
+        .sidebar-nav li a:hover {
+            background-color: #788892;
+            color: #fff;
+        }
+
+        .section-divider {
+            border: none;
+            height: 1px;
+            background-color: #34495e;
+            margin: 10px 0;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Top Bar styles */
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px 20px;
+            padding-bottom: 10px;
+            background-color: #fff;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-name {
+            margin-right: 10px;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+
+        .user-avatar {
+            position: relative;
+        }
+
+        .user-avatar img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Dropdown Menu Styles */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            z-index: 1000;
+        }
+
+        .dropdown-item {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #333;
+            display: block;
+            white-space: nowrap;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%; /* Default width for desktop */
+            border-radius: 10px;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .modal-content p {
+            margin: 15px 0;
+            color: #333;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-actions .btn {
+            padding: 10px 20px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .modal-actions .btn.cancel-btn {
+            background-color: #ccc;
+            color: #333;
+        }
+
+        .modal-actions .btn.logout-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .modal-actions .btn:hover {
+            opacity: 0.8;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 0;
+            }
+
+            .sidebar-nav {
+                display: block;
+                text-align: left;
+                width: 50%;
+                position: fixed;
+                background-color: #2c3e50;
+                z-index: 2000;
+                margin-top: 0;
+                height: 100%;
+            }
+
+            .sidebar-nav li {
+                display: block;
+                width: 50%;
+            }
+
+            .sidebar-nav li a {
+                display: block;
+                width: 100%;
+                text-align: left;
+            }
+
+            .top-bar {
+                justify-content: space-between;
+            }
+
+            .hamburger {
+                display: block;
+                cursor: pointer;
+            }
+
+            .hamburger div {
+                width: 30px;
+                height: 3px;
+                background-color: #333;
+                margin: 6px 0;
+                transition: 0.4s;
+            }
+
+            .change .bar1 {
+                transform: rotate(-45deg) translate(-5px, 6px);
+            }
+
+            .change .bar2 {
+                opacity: 0;
+            }
+
+            .change .bar3 {
+                transform: rotate(45deg) translate(-5px, -6px);
+            }
+
+            /* Modal content on mobile */
+            .modal-content {
+                width: 90%; /* Make it full-width on small screens */
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar-nav {
+                display: block !important;
+            }
+
+            .hamburger {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="top-bar">
@@ -31,9 +307,9 @@
             <div class="section-divider"></div>
             <li class="sidebar-header">MASTER</li>
             <li><a href="/admin/departments">Department</a></li>
-            <li><a href="/admin/employee">Employee</a></li>
-            <li><a href="#">Location</a></li>
-            <li><a href="#">Users</a></li>
+            <li><a href="/admin/employees">Employee</a></li>
+            <li><a href="#">Attendance</a></li>
+            <li><a href="/admin/user">Users</a></li>
             <div class="section-divider"></div> 
             <li class="sidebar-header">REPORT</li>
             <li><a href="#">Report</a></li>

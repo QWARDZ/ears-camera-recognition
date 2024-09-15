@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Departments</title>
+    <title>Manage Employees</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <style>
         /* Global styles */
@@ -17,32 +17,32 @@
         /* Main container for the content */
         .main-container {
             padding: 20px;
-            background-color: #dbdada;
-            margin-left: 250px; /* Sidebar width accounted for */
+            background-color: #ffffff;
+            margin-left: 250px; /* Assuming a sidebar */
         }
 
-        /* Header section for title and button */
+        /* Header section */
         .header-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            flex-wrap: wrap; /* Ensure proper alignment on smaller screens */
+            flex-wrap: wrap;
         }
 
         .header-section h1 {
             font-size: 24px;
             color: #343a40;
-            margin-bottom: 10px; /* Add space below title */
+            margin-bottom: 10px;
         }
 
         .btn-primary {
             background-color: #007bff;
-            color: #e0c2c2;
+            color: #fff;
             border: none;
-            padding: 8px 12px;
+            padding: 10px 16px;
             font-size: 14px;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
@@ -58,32 +58,18 @@
             overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
         }
 
-        table.dataTable {
+        table {
             width: 100%;
             border-collapse: collapse;
             background-color: #fff;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
-            table-layout: auto; /* Allows dynamic resizing */
         }
 
         th, td {
-            padding: 10px;
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #dee2e6;
-        }
-
-        /* Specific Column Width Adjustments */
-        th.col-small, td.col-small {
-            width: 50px; /* Width for # and ID */
-        }
-
-        th.col-wide, td.col-wide {
-            width: 40%; /* Wider width for Department Name */
-        }
-
-        th.col-medium, td.col-medium {
-            width: 20%; /* Medium width for Actions */
         }
 
         th {
@@ -96,11 +82,11 @@
             color: #495057;
         }
 
-        /* Buttons in table */
+        /* Buttons inside table */
         .btn {
             padding: 6px 10px;
             font-size: 12px;
-            border-radius: 4px;
+            border-radius: 5px;
             margin-right: 5px;
             border: none;
             cursor: pointer;
@@ -144,6 +130,7 @@
             width: 100%;
             max-width: 400px;
             border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .form-group {
@@ -155,109 +142,66 @@
             color: #495057;
         }
 
-        input[type="text"] {
+        input[type="text"], select {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             font-size: 14px;
             border: 1px solid #ced4da;
             border-radius: 4px;
+            box-sizing: border-box;
         }
 
         .save-btn {
             background-color: #28a745;
             color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 10px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
         }
 
         .cancel-btn {
             background-color: #6c757d;
             color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 10px 16px;
+            border-radius: 5px;
             margin-left: 10px;
+            cursor: pointer;
+            border: none;
         }
 
-        /* DataTables adjustments */
-        .dataTables_wrapper .dataTables_length, 
-        .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 15px;
-        }
-
-        .dataTables_length label,
-        .dataTables_filter label {
-            font-size: 14px;
-        }
-
-        .dataTables_length select,
-        .dataTables_filter input {
-            border: 1px solid #ced4da;
-            padding: 5px;
-            border-radius: 4px;
-        }
-
-        .dataTables_wrapper .dataTables_length {
-            float: left;
-        }
-
-        .dataTables_wrapper .dataTables_filter {
-            float: right;
-        }
-
-        /* Mobile view and smaller screens adjustments */
+        /* Responsive styles */
         @media (max-width: 768px) {
-            /* Remove sidebar margin on smaller screens */
             .main-container {
                 margin-left: 0;
                 padding: 10px;
             }
 
-            /* Stack title and button vertically on small screens */
             .header-section {
                 flex-direction: column;
                 align-items: flex-start;
-                width: 100%;        
-                position: relative;
             }
 
             .header-section .btn-primary {
-                align-self: flex-end; /* Align button to the right */
-                margin-top: 5px; /* Add space above the button */
+                align-self: flex-end;
+                margin-top: 10px;
             }
 
-            /* Table container: Allow scrolling on smaller screens */
             .table-container {
                 margin-top: 10px;
-                overflow-x: scroll;
+                overflow-x: auto;
             }
 
-            /* Adjust DataTables controls for small screens */
-            .dataTables_wrapper .dataTables_length,
-            .dataTables_wrapper .dataTables_filter {
-                float: none;
-                text-align: center;
-                margin-bottom: 10px;
-            }
-
-            /* Table layout adjustments for smaller screens */
-            table.dataTable {
+            table {
+                table-layout: auto;
                 width: 100%;
-                table-layout: auto; /* Ensure proper table layout */
             }
 
-            th.col-small, td.col-small {
-                width: 30px; /* Adjust width for smaller screens */
+            th, td {
+                font-size: 12px;
+                padding: 8px;
             }
 
-            th.col-wide, td.col-wide {
-                width: 50%; /* Adjust Department Name width */
-            }
-
-            th.col-medium, td.col-medium {
-                width: 20%; /* Adjust Actions width */
-            }
-
-            /* Smaller buttons on small screens */
             .btn {
                 font-size: 10px;
                 padding: 5px 8px;
@@ -270,30 +214,32 @@
     {% include 'layout/admin_nav.html' %}
 
     <div class="main-container">
-        <div class="header-section">
-            <h1>Manage Departments</h1>
-            <button class="btn btn-primary" onclick="showAddDepartmentForm()">+ Add New Department</button>
-        </div>
 
         <div class="table-container">
-            <table id="departmentTable" class="display">
+            <table id="employeeTable" class="display">
                 <thead>
                     <tr>
                         <th class="col-small">#</th>
-                        <th class="col-small">ID</th>
-                        <th class="col-wide">Department Name</th>
+                        <th class="col-wide">First Name</th>
+                        <th class="col-wide">Last Name</th>
+                        <th class="col-wide">Department</th>
+                        <th class="col-wide">Shift</th>
+                        <th class="col-wide">Gender</th>
                         <th class="col-medium">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for department in departments %}
+                    {% for employee in employees %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ department[0] }}</td>
-                        <td>{{ department[1] }}</td>
+                        <td>{{ employee[1] }}</td>
+                        <td>{{ employee[2] }}</td>
+                        <td>{{ employee[3] }}</td>
+                        <td>{{ employee[4] }}</td>
+                        <td>{{ employee[5] }}</td>
                         <td>
-                            <button class="btn btn-primary" onclick="editDepartment('{{ department[0] }}', '{{ department[1] }}')">Edit</button>
-                            <form method="POST" action="/admin/departments/delete/{{ department[0] }}" style="display:inline;">
+                            <button class="btn btn-primary" onclick="editEmployee('{{ employee[0] }}', '{{ employee[1] }}', '{{ employee[2] }}', '{{ employee[3] }}', '{{ employee[4] }}', '{{ employee[5] }}')">Edit</button>
+                            <form method="POST" action="/admin/employees/delete/{{ employee[0] }}" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
                         </td>
@@ -304,14 +250,38 @@
         </div>
     </div>
 
-    <div id="departmentModal" class="modal">
+    <div id="employeeModal" class="modal">
         <div class="modal-content">
-            <h2>Department Master Data</h2>
-            <form method="POST" action="/admin/departments">
-                <input type="hidden" id="department_id" name="department_id">
+            <h2>Employee Master Data</h2>
+            <form method="POST" action="/admin/employees">
+                <input type="hidden" id="employee_id" name="employee_id">
                 <div class="form-group">
-                    <label for="department_name">Department Name</label>
-                    <input type="text" id="department_name" name="department_name" required>
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="department">Department</label>
+                    <select id="department" name="department" required>
+                        {% for department in departments %}
+                            <option value="{{ department[0] }}">{{ department[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="shift">Shift</label>
+                    <input type="text" id="shift" name="shift" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn save-btn">Save</button>
                 <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
@@ -323,31 +293,43 @@
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#departmentTable').DataTable();
+            $('#employeeTable').DataTable();
 
-            var departmentModal = document.getElementById("departmentModal");
-            var departmentNameInput = document.getElementById("department_name");
-            var departmentIdInput = document.getElementById("department_id");
+            var employeeModal = document.getElementById("employeeModal");
+            var employeeIdInput = document.getElementById("employee_id");
+            var firstNameInput = document.getElementById("first_name");
+            var lastNameInput = document.getElementById("last_name");
+            var departmentInput = document.getElementById("department");
+            var shiftInput = document.getElementById("shift");
+            var genderInput = document.getElementById("gender");
 
-            window.showAddDepartmentForm = function() {
-                departmentNameInput.value = '';
-                departmentIdInput.value = ''; 
-                departmentModal.style.display = "block";
+            window.showAddEmployeeForm = function() {
+                employeeIdInput.value = '';
+                firstNameInput.value = '';
+                lastNameInput.value = '';
+                departmentInput.value = '';
+                shiftInput.value = '';
+                genderInput.value = 'Male'; 
+                employeeModal.style.display = "block";
             };
 
-            window.editDepartment = function(id, name) {
-                departmentIdInput.value = id;
-                departmentNameInput.value = name;
-                departmentModal.style.display = "block";
+            window.editEmployee = function(id, first_name, last_name, department, shift, gender) {
+                employeeIdInput.value = id;
+                firstNameInput.value = first_name;
+                lastNameInput.value = last_name;
+                departmentInput.value = department;
+                shiftInput.value = shift;
+                genderInput.value = gender;
+                employeeModal.style.display = "block";
             };
 
             window.closeModal = function() {
-                departmentModal.style.display = "none";
+                employeeModal.style.display = "none";
             };
 
             window.onclick = function(event) {
-                if (event.target == departmentModal) {
-                    departmentModal.style.display = "none";
+                if (event.target == employeeModal) {
+                    employeeModal.style.display = "none";
                 }
             };
         });
