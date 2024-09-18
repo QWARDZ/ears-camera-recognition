@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
@@ -290,32 +289,41 @@
 
     <nav class="sidebar">
         <div class="logo-menu">
-            <h2 class="logo">E.a.r.s</h2>
+            <h2 class="logo">Ears</h2>
             <i class='bx bx-menu toggle-btn'></i>
         </div>
 
         <ul class="list">
+            <li class="list-item active">
+                <a href="/admin/dashboard">
+                    <i class='bx bx-grid-alt'></i>
+                    <span class="link-name" style="--i:1;">Dashboard</span>
+                </a>
+            </li>
             <li class="list-item">
-                <a href="/employee/attendance">
+                <a href="/admin/departments">
                     <i class='bx bx-box'></i>
-                    <span class="link-name" style="--i:1;">Attendance</span>
+                    <span class="link-name" style="--i:2;">Department</span>
                 </a>
             </li>
-
             <li class="list-item">
-                <a href="/employee/history">
+                <a href="/admin/employees">
                     <i class='bx bx-body'></i>
-                    <span class="link-name" style="--i:2;">History</span>
+                    <span class="link-name" style="--i:3;">Employee</span>
                 </a>
             </li>
-
             <li class="list-item">
-                <a href="/employee/profile">
+                <a href="/admin/shifts">
                     <i class='bx bx-time-five'></i>
-                    <span class="link-name" style="--i:3;">Profile</span>
+                    <span class="link-name" style="--i:4;">Shift</span>
                 </a>
             </li>
-
+            <li class="list-item">
+                <a href="/admin/user">
+                    <i class='bx bx-user'></i>
+                    <span class="link-name" style="--i:5;">Users</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

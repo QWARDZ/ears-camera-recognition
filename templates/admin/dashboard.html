@@ -3,100 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" href="/static/css/admin/admin-dashboard.css"> -->
     <title>Admin Dashboard</title>
     <style>
-        
-body {
-    font-family: Arial, sans-serif;  
-    font-size: 16px;  
-    margin: 0;
-    padding: 0;
-    background-color: #d6d6d6 !important;
-    color: #333;
-}
+        body {
+            font-family: Arial, sans-serif;  
+            font-size: 16px;  
+            margin: 0;
+            padding: 0;
+            background-color: #d6d6d6 !important;
+            color: #333;
+        }
 
+        .main-container {
+            margin-left: 80px;
+            padding: 20px;
+            transition: margin-left 0.5s ease; /* Smooth sliding effect */
+        }
 
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
-}
+        .dashboard-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
 
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+            flex: 1 1 calc(25% - 20px);
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
 
-.dashboard-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 20px;
-}
+        .card a {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
 
-.card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-    flex: 1 1 calc(25% - 20px);
-    text-align: center;
-    padding: 20px;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
+        .card-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
 
-.card a {
-    display: block;
-    color: inherit;
-    text-decoration: none;
-}
+        .card-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2980b9;
+        }
 
-.card-title {
-    font-size: 16px;
-    margin-bottom: 10px;
-    color: #2c3e50;
-}
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
 
-.card-value {
-    font-size: 32px;
-    font-weight: bold;
-    color: #2980b9;
-}
+        .section-divider {
+            border: none;
+            height: 1px;
+            background-color: #34495e;
+            margin: 10px 0;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 10px;
+            }
 
+            .dashboard-cards {
+                flex-direction: column;
+            }
 
-.section-divider {
-    border: none;
-    height: 1px;
-    background-color: #34495e;
-    margin: 10px 0;
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-
-@media (max-width: 768px) {
-    .main-content {
-        margin-left: 0;
-        padding: 10px;
-    }
-
-    .dashboard-cards {
-        flex-direction: column;
-    }
-
-    .card {
-        flex: 1 1 100%;
-    }
-}
-
+            .card {
+                flex: 1 1 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
     {% include 'layout/admin_nav.html' %}
 
-    <div class="main-content">
+    <div class="main-container">
         <div class="dashboard-cards">
             <div class="card">
                 <a href="/admin/departments">
@@ -105,8 +99,47 @@ body {
                 </a>
             </div>
 
+            <div class="card">
+                <a href="/admin/employees">
+                    <div class="card-title">Employees</div>
+                    <div class="card-value">{{ employee_count }}</div>
+                </a>
+            </div>
+
+            <div class="card">
+                <a href="/admin/shifts">
+                    <div class="card-title">Shifts</div>
+                    <div class="card-value">{{ shift_count }}</div>
+                </a>
+            </div>
+
+            <div class="card">
+                <a href="/admin/user">
+                    <div class="card-title">Users</div>
+                    <div class="card-value">{{ user_count }}</div>
+                </a>
+            </div>
         </div>
     </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script>
+        // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const mainContainer = document.querySelector('.main-container');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                mainContainer.style.marginLeft = '260px';
+            } else {
+                mainContainer.style.marginLeft = '80px';
+            }
+        });
+    </script>
 
 </body>
 </html>

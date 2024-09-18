@@ -46,7 +46,7 @@ class EmployeeAttendance:
                     if user[0] == 'admin':
                         return redirect('/admin/dashboard')
                     elif user[0] == 'employee':
-                        return redirect('/employee/dashboard')
+                        return redirect('/employee/attendance')
                 else:
                     return render_template('login.html', error="Invalid credentials. Please try again.")
             
@@ -63,12 +63,35 @@ class EmployeeAttendance:
         def admin_dashboard():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
+
+                # Count departments
                 cur.execute("SELECT COUNT(*) as department_count FROM departments")
                 department_count = cur.fetchone()[0]
+
+                # Count employees
+                cur.execute("SELECT COUNT(*) as employee_count FROM employees")
+                employee_count = cur.fetchone()[0]
+
+                # Count shifts
+                cur.execute("SELECT COUNT(*) as shift_count FROM shifts")
+                shift_count = cur.fetchone()[0]
+
+                # Count users
+                cur.execute("SELECT COUNT(*) as user_count FROM users")
+                user_count = cur.fetchone()[0]
+
                 cur.close()
-                return render_template('admin/dashboard.html', department_count=department_count)
+
+                # Pass the counts to the template
+                return render_template('admin/dashboard.html', department_count=department_count, 
+                                    employee_count=employee_count, shift_count=shift_count, 
+                                    user_count=user_count)
             else:
                 return redirect('/login')
+
+            
+#----------------------------------------------------------
+            
 
         # Department Management Routes
         @self.app.route('/admin/departments', methods=['GET', 'POST'])
@@ -148,26 +171,35 @@ class EmployeeAttendance:
                             "INSERT INTO employees (first_name, last_name, department, shift, gender) VALUES (%s, %s, %s, %s, %s)",
                             (first_name, last_name, department, shift, gender)
                         )
-                        # Get the new employee ID
-                        cur.execute("SELECT LAST_INSERT_ID()")
-                        new_employee_id = cur.fetchone()[0]
 
                     self.mysql.connection.commit()
                     return redirect('/admin/employees')
-                
+
+                # Fetch employees with departments and shifts
+                cur.execute("""
+                    SELECT e.id, e.first_name, e.last_name, d.name, CONCAT(s.start_time, ' - ', s.end_time) AS shift_time, e.gender
+                    FROM employees e
+                    LEFT JOIN departments d ON e.department = d.id
+                    LEFT JOIN shifts s ON e.shift = s.id
+                """)
+                employees = cur.fetchall()
 
 
-                # Fetch the list of departments from the database
+                # Fetch the list of departments for the dropdown
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
 
-                cur.execute("SELECT id, first_name, last_name, department, shift, gender FROM employees")
-                employees = cur.fetchall()
+                # Fetch the list of shifts for the dropdown
+                cur.execute("SELECT id, start_time, end_time FROM shifts")
+                shifts = cur.fetchall()
+
                 cur.close()
-                
-                return render_template('admin/employees.html', employees=employees, departments=departments)
+
+                # Render the employee management page with employees, departments, and shifts data
+                return render_template('admin/employees.html', employees=employees, departments=departments, shifts=shifts)
             else:
                 return redirect('/login')
+
 
         @self.app.route('/admin/employees/delete/<string:employee_id>', methods=['POST'])
         def delete_employee(employee_id):
@@ -182,67 +214,60 @@ class EmployeeAttendance:
             
 
 #----------------------------------------------------------------------------------
-
-#   user.html
-
+        # User Management Route
         @self.app.route('/admin/user', methods=['GET', 'POST'])
         def manage_users():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
+
                 if request.method == 'POST':
                     user_id = request.form.get('user_id')
                     first_name = request.form['first_name']
                     last_name = request.form['last_name']
                     department = request.form['department']
-                    shift = request.form['shift']
+                    shift = request.form['shift']  # Shift selected from dropdown
                     gender = request.form['gender']
                     username = request.form['username']
                     role = request.form['role']
                     password = request.form['password']
 
                     if user_id:
-                        # Update employee details
-                        cur.execute(
-                            "UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s WHERE id=%s",
-                            (first_name, last_name, department, shift, gender, user_id)
-                        )
-
-                        # Update user details
-                        cur.execute(
-                            "UPDATE users SET username=%s, password=%s, role=%s WHERE id=%s",
-                            (username, password, role, user_id)
-                        )
+                        # Update employee and user details
+                        cur.execute("UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s WHERE id=%s", 
+                                    (first_name, last_name, department, shift, gender, user_id))
+                        cur.execute("UPDATE users SET username=%s, password=%s, role=%s WHERE id=%s", 
+                                    (username, password, role, user_id))
                     else:
-                        # Insert new employee
-                        cur.execute(
-                            "INSERT INTO employees (first_name, last_name, department, shift, gender) VALUES (%s, %s, %s, %s, %s)",
-                            (first_name, last_name, department, shift, gender)
-                        )
+                        # Insert new employee and user
+                        cur.execute("INSERT INTO employees (first_name, last_name, department, shift, gender) VALUES (%s, %s, %s, %s, %s)", 
+                                    (first_name, last_name, department, shift, gender))
                         cur.execute("SELECT LAST_INSERT_ID()")
                         new_employee_id = cur.fetchone()[0]
 
-                        # Insert new user
-                        cur.execute(
-                            "INSERT INTO users (username, password, role, employee_id) VALUES (%s, %s, %s, %s)",
-                            (username, password, role, new_employee_id)
-                        )
+                        cur.execute("INSERT INTO users (username, password, role, employee_id) VALUES (%s, %s, %s, %s)", 
+                                    (username, password, role, new_employee_id))
 
                     self.mysql.connection.commit()
                     return redirect('/admin/user')
 
-                # Fetch all users and join with employees using employee_id
+                # Fetch all users with employee details
                 cur.execute("""
-                    SELECT u.id, CONCAT(e.first_name, ' ', e.last_name) AS full_name, u.username, u.role, u.password
+                    SELECT u.id, CONCAT(e.first_name, ' ', e.last_name) AS full_name, u.username, u.role, u.password, s.start_time, s.end_time
                     FROM users u
                     LEFT JOIN employees e ON u.employee_id = e.id
+                    LEFT JOIN shifts s ON e.shift = s.id
                 """)
                 users = cur.fetchall()
+
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
+
+                cur.execute("SELECT id, start_time, end_time FROM shifts")
+                shifts = cur.fetchall()
+
                 cur.close()
 
-                return render_template('admin/user.html', users=users, departments=departments)
+                return render_template('admin/user.html', users=users, departments=departments, shifts=shifts)
             else:
                 return redirect('/login')
 
@@ -269,15 +294,243 @@ class EmployeeAttendance:
         
         
 #----------------------------------------------------------------------
+        # Shift Management Routes
+        @self.app.route('/admin/shifts', methods=['GET', 'POST'])
+        def manage_shifts():
+            if 'username' in session and session['role'] == 'admin':
+                cur = self.mysql.connection.cursor()
 
+                if request.method == 'POST':
+                    shift_id = request.form.get('shift_id')
+                    start_time = request.form.get('start_time')
+                    end_time = request.form.get('end_time')
 
-        # Employee Dashboard Route
-        @self.app.route('/employee/dashboard')
-        def employee_dashboard():
-            if 'username' in session and session['role'] == 'employee':
-                return render_template('employee/dashboard.html')
+                    # If shift_id is present, update the shift, otherwise insert a new shift
+                    if shift_id:
+                        cur.execute("UPDATE shifts SET start_time = %s, end_time = %s WHERE id = %s", (start_time, end_time, shift_id))
+                    else:
+                        cur.execute("INSERT INTO shifts (start_time, end_time) VALUES (%s, %s)", (start_time, end_time))
+
+                    self.mysql.connection.commit()
+                    return redirect('/admin/shifts')
+
+                # Fetch all shifts from the database
+                cur.execute("SELECT id, start_time, end_time FROM shifts")
+                shifts = cur.fetchall()
+                cur.close()
+
+                return render_template('admin/shifts.html', shifts=shifts)
             else:
                 return redirect('/login')
+
+        # Route to delete a shift
+        @self.app.route('/admin/shifts/delete/<int:shift_id>', methods=['POST'])
+        def delete_shift(shift_id):
+            if 'username' in session and session['role'] == 'admin':
+                cur = self.mysql.connection.cursor()
+                cur.execute("DELETE FROM shifts WHERE id = %s", [shift_id])
+                self.mysql.connection.commit()
+                cur.close()
+                flash("Shift deleted successfully", "success")
+                return redirect('/admin/shifts')
+            else:
+                flash("Unauthorized action", "danger")
+                return redirect('/login')
+            
+            
+#---------------------------------------------------------------------------
+        # Route to view all attendance records (filtered by department and date range)
+        @self.app.route('/admin/attendance', methods=['GET'])
+        def attendance_report():
+            if 'username' in session and session['role'] == 'admin':
+                cur = self.mysql.connection.cursor()
+
+                # Get department list for filtering
+                cur.execute("SELECT id, name FROM departments")
+                departments = cur.fetchall()
+
+                # Get filtering parameters (start_date, end_date, department)
+                start_date = request.args.get('start_date')
+                end_date = request.args.get('end_date')
+                department = request.args.get('department')
+
+                attendance_records = []
+                if start_date and end_date and department:
+                    # Fetch attendance records based on filters
+                    query = """
+                        SELECT e.first_name, e.last_name, d.name, a.check_in, a.check_out, a.date, a.status, a.id
+                        FROM attendance a
+                        JOIN employees e ON a.employee_id = e.id
+                        JOIN departments d ON e.department = d.id
+                        WHERE a.date BETWEEN %s AND %s AND e.department = %s
+                    """
+                    cur.execute(query, (start_date, end_date, department))
+                    attendance_records = cur.fetchall()
+
+                cur.close()
+
+                return render_template('/admin/attendance.html', departments=departments, attendance_records=attendance_records)
+            else:
+                return redirect('/login')
+
+        # Route to update attendance record
+        @self.app.route('/admin/attendance/update', methods=['POST'])
+        def update_attendance():
+            if 'username' in session and session['role'] == 'admin':
+                cur = self.mysql.connection.cursor()
+
+                # Get data from form
+                attendance_id = request.form['attendance_id']
+                check_in = request.form['check_in']
+                check_out = request.form['check_out']
+                status = request.form['status']
+
+                # Update the attendance record in the database
+                query = """
+                    UPDATE attendance
+                    SET check_in = %s, check_out = %s, status = %s
+                    WHERE id = %s
+                """
+                cur.execute(query, (check_in, check_out, status, attendance_id))
+                self.mysql.connection.commit()
+
+                cur.close()
+
+                flash('Attendance record updated successfully!', 'success')
+                return redirect('/admin/attendance')
+            else:
+                return redirect('/login')
+
+        # Route to delete attendance record
+        @self.app.route('/admin/attendance/delete/<int:attendance_id>', methods=['POST'])
+        def delete_attendance(attendance_id):
+            if 'username' in session and session['role'] == 'admin':
+                cur = self.mysql.connection.cursor()
+
+                # Delete the attendance record
+                query = "DELETE FROM attendance WHERE id = %s"
+                cur.execute(query, [attendance_id])
+                self.mysql.connection.commit()
+
+                cur.close()
+
+                flash('Attendance record deleted successfully!', 'success')
+                return redirect('/admin/attendance')
+            else:
+                return redirect('/login')
+
+
+
+
+#---------------------------------------------------------------------------
+        @self.app.route('/employee/attendance', methods=['GET', 'POST'])
+        def employee_attendance():
+            if 'username' in session and session['role'] == 'employee':
+                cur = self.mysql.connection.cursor()
+
+                # Get the employee ID from the users table using the logged-in username
+                cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
+                result = cur.fetchone()
+
+                if result is None:
+                    flash("User not found.", "danger")
+                    return redirect('/login')
+
+                employee_id = result[0]
+
+                # Fetch employee's assigned shift times
+                cur.execute("""
+                    SELECT s.start_time, s.end_time 
+                    FROM employees e 
+                    JOIN shifts s ON e.shift = s.id 
+                    WHERE e.id = %s
+                """, [employee_id])
+                shift = cur.fetchone()
+                shift_start = shift[0]
+                shift_end = shift[1]
+
+                # Check if the employee has already checked in today
+                cur.execute("""
+                    SELECT check_in, check_out 
+                    FROM attendance 
+                    WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
+                attendance_record = cur.fetchone()
+
+                already_checked_in = False
+
+                if attendance_record:
+                    # If checked in but not checked out, show the check-out button
+                    if attendance_record[1] is None:
+                        already_checked_in = True
+
+                if request.method == 'POST':
+                    action = request.form['action']
+
+                    if action == 'time_in' and not already_checked_in:
+                        # Insert new check-in record
+                        cur.execute("""
+                            INSERT INTO attendance (employee_id, check_in, date) 
+                            VALUES (%s, NOW(), NOW())""", [employee_id])
+                        self.mysql.connection.commit()
+
+                        # Calculate the status (Late/On Time)
+                        cur.execute("SELECT TIME(check_in) FROM attendance WHERE employee_id = %s AND DATE(date) = CURDATE()", [employee_id])
+                        check_in_time = cur.fetchone()[0]
+
+                        if check_in_time > shift_start:
+                            status = "Late"
+                        elif check_in_time == shift_start:
+                            status = "On Time"
+                        else:
+                            status = "Early"
+
+                        # Update the status in the attendance table
+                        cur.execute("""
+                            UPDATE attendance 
+                            SET status = %s 
+                            WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
+                        self.mysql.connection.commit()
+
+                        flash(f"Checked in successfully. Status: {status}", "success")
+                        return redirect('/employee/attendance')
+
+                    elif action == 'time_out' and already_checked_in:
+                        # Update the check-out time
+                        cur.execute("""
+                            UPDATE attendance 
+                            SET check_out = NOW() 
+                            WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
+                        self.mysql.connection.commit()
+
+                        # Calculate Overtime
+                        cur.execute("SELECT TIME(check_out) FROM attendance WHERE employee_id = %s AND DATE(date) = CURDATE()", [employee_id])
+                        check_out_time = cur.fetchone()[0]
+
+                        if check_out_time > shift_end:
+                            status = "Overtime"
+                        else:
+                            status = "On Time"
+
+                        # Update the status
+                        cur.execute("""
+                            UPDATE attendance 
+                            SET status = %s 
+                            WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
+                        self.mysql.connection.commit()
+
+                        flash(f"Checked out successfully. Status: {status}", "success")
+                        return redirect('/employee/attendance')
+
+                cur.close()
+                return render_template('employee/attendance.html', already_checked_in=already_checked_in)
+
+            else:
+                return redirect('/login')
+
+
+
+
+
             
             
             

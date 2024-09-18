@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance Report</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            margin-left: 75px;
+            margin-top: 0 px;
+            background-color: #dbdada;
+            padding: 25px;
+            transition: margin-left 0.5s ease; /* Smooth sliding effect */
+            /* border-radius: 15px; */
+            /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
+        }
+
+        h1 {
+            /* text-align: center; */
+            margin-bottom: 30px;
+            font-size: 26px;
+            color: #333;
+        }
+
+        .filter-form {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .filter-form input, .filter-form select {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 30%;
+        }
+
+        .filter-form button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .attendance-table th, .attendance-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .attendance-table th {
+            background-color: #343a40;
+            color: white;
+            font-size: 16px;
+        }
+
+        .attendance-table td {
+            background-color: #f9f9f9;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .attendance-table td button {
+            padding: 8px 12px;
+            font-size: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .attendance-table td button:hover {
+            background-color: #218838;
+        }
+
+        .attendance-table td form button {
+            background-color: #dc3545;
+        }
+
+        .attendance-table td form button:hover {
+            background-color: #c82333;
+        }
+
+        .container-update {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 25px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .container-update h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .container-update label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+
+        .container-update input, .container-update select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .container-update button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .container-update button:hover {
+            background-color: #218838;
+        }
+
+        /* Media query for smaller screens */
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+            }
+
+            .filter-form input, .filter-form select, .filter-form button {
+                width: 100%;
+            }
+
+            .attendance-table th, .attendance-table td {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'layout/admin_nav.html' %}
+
+    <div class="main-container">
+        <h1>Attendance Report</h1>
+
+        <!-- Filter form for department and date range -->
+        <form class="filter-form" method="GET" action="/admin/attendance">
+            <input type="date" name="start_date" required>
+            <input type="date" name="end_date" required>
+            <select name="department" required>
+                <option value="">Select Department</option>
+                {% for department in departments %}
+                <option value="{{ department[0] }}">{{ department[1] }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Show</button>
+        </form>
+
+        <!-- Table for displaying attendance data -->
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Employee Name</th>
+                    <th>Department</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Loop through attendance records -->
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ record[5] }}</td>
+                    <td>{{ record[0] }} {{ record[1] }}</td>
+                    <td>{{ record[2] }}</td>
+                    <td>{{ record[3] }}</td>
+                    <td>{{ record[4] }}</td>
+                    <td>{{ record[6] }}</td> <!-- Status (Late, Early, Overtime) -->
+                    <td>
+                        <button onclick="populateForm('{{ record[0] }}', '{{ record[1] }}', '{{ record[3] }}', '{{ record[4] }}', '{{ record[6] }}', '{{ record[7] }}')">Update</button>
+                        <form method="POST" action="/admin/attendance/delete/{{ record[7] }}" style="display:inline;">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+    <!-- Update Form (Hidden by default, displayed when Update is clicked) -->
+    <div id="updateForm" class="container-update" style="display:none;">
+        <h2>Update Attendance</h2>
+
+        <form method="POST" action="/admin/attendance/update">
+            <label>Employee Name:</label>
+            <input type="text" id="employee_name" disabled>
+
+            <label>Check In:</label>
+            <input type="time" name="check_in" id="check_in" step="1" required>
+
+            <label>Check Out:</label>
+            <input type="time" name="check_out" id="check_out" step="1" required>
+
+            <label>Status:</label>
+            <select name="status" id="status" required>
+                <option value="On Time">On Time</option>
+                <option value="Late">Late</option>
+                <option value="Early">Early</option>
+                <option value="Overtime">Overtime</option>
+            </select>
+
+            <!-- Hidden field to store the attendance ID -->
+            <input type="hidden" name="attendance_id" id="attendance_id">
+
+            <button type="submit" class="update-btn">Update</button>
+        </form>
+    </div>
+    <script>
+
+                            // Sidebar Toggle
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const mainContainer = document.querySelector('.main-container');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                if (sidebar.classList.contains('active')) {
+                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+                } else {
+                    mainContainer.style.marginLeft = '80px'; /* Default margin */
+                }
+            });
+
+
+        function populateForm(firstName, lastName, checkIn, checkOut, status, attendanceId) {
+            // Set form fields
+            document.getElementById('employee_name').value = firstName + " " + lastName;
+            document.getElementById('check_in').value = checkIn;
+            document.getElementById('check_out').value = checkOut;
+            document.getElementById('status').value = status;
+            document.getElementById('attendance_id').value = attendanceId;
+            
+            // Show the form
+            document.getElementById('updateForm').style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>

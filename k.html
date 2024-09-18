@@ -3,131 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    <title> </title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-
-
-        
-        * {
+                /* General Styles */
+                body {
+            font-family: Arial, sans-serif;  
+            font-size: 16px;  
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-
-        }
-
-        body {
             background-color: #f4f4f4;
-            font-family: 'Poppins', sans-serif;
+            color: #333;
         }
 
+        /* Sidebar Styles */
         .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #2c3e50;
             position: fixed;
             top: 0;
             left: 0;
-            width: 80px;
-            height: 100%;
-            background:#2c3e50;
-            padding: 6px 14px;
-            transition: .5s;
+            padding-top: 5px;
+            transition: width 0.3s ease;
         }
 
-        .sidebar.active {
-            width: 260px;
-        }
-
-        .sidebar .logo-menu {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            height: 70px;
-            padding: 20px;
-            justify-content: flex-start;
-        }
-
-        .sidebar .logo-menu .logo {
-            font-size: 25px;
-            color: #fff;
-            opacity: 0;
-            transition: .3s;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-family: 'Poppins', sans-serif;
-            margin-left: 10px;
-            transform: opacity 0.3s ease;
-        }
-
-        .sidebar.active .logo-menu .logo {
-            opacity: 1;
-            transition-delay: .2s;
-        }
-
-        .sidebar .logo-menu .toggle-btn {
-            position: absolute;
-            left: 30%;
-            transform: translate(-50);
-            width: 40px;
-            height: 40px;
-            font-size: 22px;
-            color: #fff;
-            text-align: center;
-            line-height: 40px;
-            cursor: pointer;
-            transition: .5s;
-        }
-
-        .sidebar.active .logo-menu .toggle-btn {
-            left: 80%;
-        }
-
-        .sidebar .list {
-            margin-top: 10px;
-        }
-
-        .list .list-item {
+        .sidebar-nav {
             list-style: none;
-            width: 100%;
-            height: 50px;
-            margin: 5px 0;
-            line-height: 50px;
+            padding: 0;
         }
 
-        .list .list-item a {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
+        .sidebar-header {
+            font-size: 12px;  
+            text-transform: uppercase;
+            padding: 10px 20px;
+            color: #95a5a6;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-nav li {
+            padding: 8px 20px;
+        }
+
+        .sidebar-nav li a {
+            color: #ecf0f1;
+            font-size: 14px; 
+            display: block;
+            transition: background 0.3s, color 0.3s;
+            padding: 10px;
+            border-radius: 5px;
+            text-decoration: none; 
+        }
+
+        .sidebar-nav li a:hover {
+            background-color: #788892;
             color: #fff;
-            text-decoration: none;
-            border-radius: 6px;
-            white-space: nowrap;
-            transition: .5s;
-        }
-        
-        .list .list-item a:hover {
-            background: rgba(255, 255, 255, .2);
         }
 
-        .list .list-item a i {
-            min-width: 50px;
-            height: 50px;
-            text-align: center;
-            line-height: 50px;
-        }
-
-        .sidebar .link-name {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity .3s;
-        }
-
-        .sidebar.active .link-name {
-            opacity: 1;
-            pointer-events: auto;
-            transition-delay: calc(.1s * var(--i));
+        .section-divider {
+            border: none;
+            height: 1px;
+            background-color: #34495e;
+            margin: 10px 0;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Top Bar styles */
@@ -136,6 +75,7 @@
             justify-content: flex-end;
             align-items: center;
             padding: 10px 20px;
+            padding-bottom: 10px;
             background-color: #fff;
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
         }
@@ -179,6 +119,7 @@
             font-size: 14px;
             color: #333;
             display: block;
+            white-space: nowrap;
             text-decoration: none;
             transition: background 0.3s ease;
         }
@@ -205,13 +146,18 @@
             margin: 5% auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 30%;
+            width: 30%; /* Default width for desktop */
             border-radius: 10px;
         }
 
         .modal-content h2 {
             margin-top: 0;
             color: #2c3e50;
+        }
+
+        .modal-content p {
+            margin: 15px 0;
+            color: #333;
         }
 
         .modal-actions {
@@ -265,9 +211,75 @@
                 width: 100%;
                 height: auto;
                 position: relative;
+                padding: 0;
+            }
+
+            .sidebar-nav {
+                display: block;
+                text-align: left;
+                width: 50%;
+                position: fixed;
+                background-color: #2c3e50;
+                z-index: 2000;
+                margin-top: 0;
+                height: 100%;
+            }
+
+            .sidebar-nav li {
+                display: block;
+                width: 50%;
+            }
+
+            .sidebar-nav li a {
+                display: block;
+                width: 100%;
+                text-align: left;
+            }
+
+            .top-bar {
+                justify-content: space-between;
+            }
+
+            .hamburger {
+                display: block;
+                cursor: pointer;
+            }
+
+            .hamburger div {
+                width: 30px;
+                height: 3px;
+                background-color: #333;
+                margin: 6px 0;
+                transition: 0.4s;
+            }
+
+            .change .bar1 {
+                transform: rotate(-45deg) translate(-5px, 6px);
+            }
+
+            .change .bar2 {
+                opacity: 0;
+            }
+
+            .change .bar3 {
+                transform: rotate(45deg) translate(-5px, -6px);
+            }
+
+            /* Modal content on mobile */
+            .modal-content {
+                width: 90%; /* Make it full-width on small screens */
             }
         }
 
+        @media (min-width: 769px) {
+            .sidebar-nav {
+                display: block !important;
+            }
+
+            .hamburger {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -288,38 +300,23 @@
         </div>
     </div>
 
-    <nav class="sidebar">
-        <div class="logo-menu">
-            <h2 class="logo">E.a.r.s</h2>
-            <i class='bx bx-menu toggle-btn'></i>
-        </div>
-
-        <ul class="list">
-            <li class="list-item">
-                <a href="/employee/attendance">
-                    <i class='bx bx-box'></i>
-                    <span class="link-name" style="--i:1;">Attendance</span>
-                </a>
-            </li>
-
-            <li class="list-item">
-                <a href="/employee/history">
-                    <i class='bx bx-body'></i>
-                    <span class="link-name" style="--i:2;">History</span>
-                </a>
-            </li>
-
-            <li class="list-item">
-                <a href="/employee/profile">
-                    <i class='bx bx-time-five'></i>
-                    <span class="link-name" style="--i:3;">Profile</span>
-                </a>
-            </li>
-
+    <div class="sidebar">
+        <ul class="sidebar-nav">
+            <li class="sidebar-header">ADMIN</li>
+            <li><a href="/admin/dashboard">Dashboard</a></li>
+            <div class="section-divider"></div>
+            <li class="sidebar-header">MASTER</li>
+            <li><a href="/admin/departments">Department</a></li>
+            <li><a href="/admin/employees">Employee</a></li>
+            <li><a href="/admin/shifts">Shift</a></li>
+            <li><a href="#">Attendance</a></li>
+            <li><a href="/admin/user">Users</a></li>
+            <div class="section-divider"></div> 
+            <li class="sidebar-headerdiv">REPORT</li>
+            <li><a href="#">Report</a></li>
         </ul>
-    </nav>
+    </div>
 
-    <!-- Logout Modal -->
     <div id="logoutModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -333,23 +330,20 @@
     </div>
 
     <script>
-        // Sidebar Toggle
-        const sidebar = document.querySelector('.sidebar');
-        const toggleBtn = document.querySelector('.toggle-btn');
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-
         // Dropdown and Modal Logic
-        const userIcon = document.getElementById("userIcon");
-        const dropdownMenu = document.getElementById("dropdownMenu");
-        const logoutConfirmLink = document.getElementById("logoutConfirmLink");
-        const logoutModal = document.getElementById("logoutModal");
-        const closeBtn = document.getElementsByClassName("close")[0];
-        const cancelBtn = document.getElementsByClassName("cancel-btn")[0];
+        var userIcon = document.getElementById("userIcon");
+        var dropdownMenu = document.getElementById("dropdownMenu");
+        var logoutConfirmLink = document.getElementById("logoutConfirmLink");
+        var logoutModal = document.getElementById("logoutModal");
+        var closeBtn = document.getElementsByClassName("close")[0];
+        var cancelBtn = document.getElementsByClassName("cancel-btn")[0];
 
         userIcon.onclick = function() {
-            dropdownMenu.style.display = dropdownMenu.style.display === "block" ? "none" : "block";
+            if (dropdownMenu.style.display === "block") {
+                dropdownMenu.style.display = "none";
+            } else {
+                dropdownMenu.style.display = "block";
+            }
         }
 
         logoutConfirmLink.onclick = function(event) {
@@ -366,6 +360,9 @@
         }
 
         window.onclick = function(event) {
+            if (event.target !== userIcon && event.target !== dropdownMenu) {
+                dropdownMenu.style.display = "none";
+            }
             if (event.target === logoutModal) {
                 logoutModal.style.display = "none";
             }
@@ -374,7 +371,32 @@
         // Hamburger menu toggle
         function toggleHamburger(element) {
             element.classList.toggle("change");
+            var nav = document.querySelector('.sidebar-nav');
+            if (nav.style.display === "block") {
+                nav.style.display = "none";
+            } else {
+                nav.style.display = "block";
+            }
         }
+
+        // Ensure sidebar visibility on resize
+        window.addEventListener('resize', function () {
+            var nav = document.querySelector('.sidebar-nav');
+            if (window.innerWidth > 768) {
+                nav.style.display = "block"; // Show sidebar on desktop
+            } else {
+                nav.style.display = "none"; // Hide sidebar on mobile
+            }
+        });
+
+        // Initial check on load
+        window.onload = function() {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar-nav').style.display = "block";
+            } else {
+                document.querySelector('.sidebar-nav').style.display = "none";
+            }
+        };
     </script>
 </body>
 </html>

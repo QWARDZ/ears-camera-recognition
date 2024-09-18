@@ -16,40 +16,73 @@
 
         /* Main container for the content */
         .main-container {
+            max-width: 1905px;
+            margin-left: 75px;
             padding: 20px;
-            background-color: #ffffff;
-            margin-left: 250px; /* Assuming a sidebar */
+            background-color: #dbdada;
+            transition: margin-left 0.5s ease; /* Smooth sliding effect */
         }
 
-        /* Header section */
+        /* Header section for title and button */
         .header-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Ensure proper alignment on smaller screens */
         }
 
         .header-section h1 {
             font-size: 24px;
             color: #343a40;
-            margin-bottom: 10px;
+            margin-bottom: 10px; /* Add space below title */
+        }
+
+        /* Black table header styles */
+        th {
+            background-color: #343a40; /* Set background to black */
+            color: #fff; /* Set text color to white for contrast */
+            padding: 10px; /* Keep the padding for spacing */
+            text-align: left; /* Align text to the left */
+            border-bottom: 1px solid #dee2e6; /* Add a bottom border for separation */
         }
 
         .btn-primary {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            font-size: 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+    background-color: #26c726;    /* Bootstrap primary color */
+    color: #fff; /* White text */
+}
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
+.btn-primary:hover {
+    background-color: #c4d8c8; /* Darker blue on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow on hover */
+}
+
+
+        /* General button styling */
+.btn {
+    padding: 8px 12px; /* Adjust padding for a balanced look */
+    font-size: 14px; /* Consistent font size */
+    border-radius: 4px; /* Rounded corners */
+    border: none; /* No border for a sleek look */
+    cursor: pointer; /* Pointer cursor for buttons */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
+}
+
+/* Delete button styles */
+.btn-danger {
+    background-color: #dc3545;/* Soft red color for delete */
+    color: #fff; /* White text */
+}
+
+.btn-danger:hover {
+    background-color: #c4d8c8; /* Darker red on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow on hover */
+}
+
+/* Button container styling (optional for better layout control) */
+td.col-medium .btn {
+    margin-right: 5px; /* Add spacing between Edit and Delete buttons */
+}
 
         /* Table styles */
         .table-container {
@@ -58,56 +91,48 @@
             overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
         }
 
-        table {
+        table.dataTable {
             width: 100%;
             border-collapse: collapse;
             background-color: #fff;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
+            table-layout: auto; /* Allows dynamic resizing */
         }
 
         th, td {
-            padding: 12px;
+            padding: 10px;
             text-align: left;
             border-bottom: 1px solid #dee2e6;
         }
 
-        th {
-            background-color: #343a40;
-            color: #fff;
+        /* Specific Column Width Adjustments */
+        th.col-small, td.col-small {
+            width: 5%; /* Width for # column */
         }
 
-        td {
-            font-size: 14px;
-            color: #495057;
+        th.col-wide, td.col-wide {
+            width: 20%; /* Width for wide columns such as First Name, Last Name, etc. */
         }
 
-        /* Buttons inside table */
-        .btn {
-            padding: 6px 10px;
+        th.col-medium, td.col-medium {
+            width: 15%; /* Increase width for Actions column */
+        }
+
+        /* Ensure the buttons are aligned side by side */
+        td.col-medium {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Add some margin to space out the buttons */
+        td .btn {
+            margin-right: 5px; /* Add spacing between the buttons */
+            padding: 6px 12px;
             font-size: 12px;
-            border-radius: 5px;
-            margin-right: 5px;
-            border: none;
+            border-radius: 4px;
             cursor: pointer;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: #fff;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
         }
 
         /* Modal styles */
@@ -130,83 +155,161 @@
             width: 100%;
             max-width: 400px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 5px; /* Provide consistent spacing between input fields */
+            display: flex;
+            flex-direction: column;       
         }
 
         label {
             font-size: 14px;
             color: #495057;
+            margin-bottom: 5px; /* Add space between label and input */
         }
 
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+
+        /* Specific styling for DataTables search input */
+/* Reset styling for DataTables "Show entries" dropdown */
+.dataTables_length select {
+    width: auto; /* Original width for dropdown */
+    padding: 3px; /* Original padding */
+    font-size: 14px; /* Restore original font size */
+    border: 1px solid #ced4da; /* Default border */
+    border-radius: 4px; /* Default rounded corners */
+    background-color: #fff; /* Default background color */
+    box-sizing: border-box; /* Ensure proper box-sizing */
+}
+
+
+
+input[type="text"],
+select {
+    width: 100%; /* Ensure full width for input and select */
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box; /* Prevent overflow */
+    margin-top: 5px;
+}
 
         .save-btn {
             background-color: #28a745;
             color: #fff;
-            padding: 10px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
         }
 
         .cancel-btn {
             background-color: #6c757d;
             color: #fff;
-            padding: 10px 16px;
-            border-radius: 5px;
+            padding: 8px 12px;
+            border-radius: 4px;
             margin-left: 10px;
-            cursor: pointer;
-            border: none;
         }
 
-        /* Responsive styles */
+        /* DataTables adjustments */
+        .dataTables_wrapper .dataTables_length, 
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 15px;
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            font-size: 14px;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            border: 1px solid #ced4da;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            float: left;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            float: right;
+        }
+
+        /* Mobile view and smaller screens adjustments */
         @media (max-width: 768px) {
+            /* Remove sidebar margin on smaller screens */
             .main-container {
                 margin-left: 0;
                 padding: 10px;
             }
 
+            /* Stack title and button vertically on small screens */
             .header-section {
                 flex-direction: column;
                 align-items: flex-start;
+                width: 100%;        
+                position: relative;
             }
 
             .header-section .btn-primary {
-                align-self: flex-end;
-                margin-top: 10px;
+                align-self: flex-end; /* Align button to the right */
+                margin-top: 5px; /* Add space above the button */
             }
 
+            /* Table container: Allow scrolling on smaller screens */
             .table-container {
                 margin-top: 10px;
-                overflow-x: auto;
+                overflow-x: scroll;
             }
 
-            table {
-                table-layout: auto;
+            /* Adjust DataTables controls for small screens */
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter {
+                float: none;
+                text-align: center;
+                margin-bottom: 10px;
+            }
+
+            /* Table layout adjustments for smaller screens */
+            table.dataTable {
                 width: 100%;
+                table-layout: auto; /* Ensure proper table layout */
             }
 
-            th, td {
-                font-size: 12px;
-                padding: 8px;
+            th.col-small, td.col-small {
+                width: 30px; /* Adjust width for smaller screens */
             }
 
+            th.col-wide, td.col-wide {
+                width: 50%; /* Adjust Department Name width */
+            }
+
+            th.col-medium, td.col-medium {
+                width: 20%; /* Adjust Actions width */
+            }
+
+            /* Smaller buttons on small screens */
             .btn {
                 font-size: 10px;
                 padding: 5px 8px;
             }
         }
+
+
+
+        /* Specific Column Width Adjustments */
+th:nth-child(1) { /* # Column */
+    width: 5%;
+}
+th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5) { /* Full Name, Username, Role, Password */
+    width: 20%; /* Even width for these columns */
+}
+th:nth-child(6) { /* Actions Column */
+    width: 15%; /* Slightly larger for actions */
+}
+
     </style>
 </head>
 <body>
@@ -223,12 +326,12 @@
             <table id="userTable" class="display">
                 <thead>
                     <tr>
-                        <th class="col-small">#</th>
-                        <th class="col-wide">Full Name</th>
-                        <th class="col-wide">Username</th>
-                        <th class="col-wide">Role</th>
-                        <th class="col-wide">Password</th>
-                        <th class="col-medium">Actions</th>
+                        <th>#</th>
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Password</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -240,7 +343,7 @@
                         <td>{{ user[3] }}</td>
                         <td>{{ user[4] }}</td>
                         <td>
-                            <button class="btn btn-primary" onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}')">Edit</button>
+                            <button class="btn btn-primary" onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}')">Edit</button>
                             <form method="POST" action="/admin/user/delete/{{ user[0] }}" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
@@ -268,6 +371,16 @@
                     <label for="last_name">Last Name</label>
                     <input type="text" id="last_name" name="last_name" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="department">Department</label>
                     <select id="department" name="department" required>
@@ -278,21 +391,11 @@
                 </div>
                 <div class="form-group">
                     <label for="shift">Shift</label>
-                    <input type="text" id="shift" name="shift" required>
-                </div>
-                <div class="form-group">
-                    <label for="gender">Gender</label>
-                    <select id="gender" name="gender" required>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                    <select id="shift" name="shift" required>
+                        {% for shift in shifts %}
+                            <option value="{{ shift[0] }}">{{ shift[1] }} - {{ shift[2] }}</option>
+                        {% endfor %}
                     </select>
-                </div>
-
-                <!-- User Information -->
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
                 </div>
                 <div class="form-group">
                     <label for="role">Role</label>
@@ -300,6 +403,10 @@
                         <option value="admin">Admin</option>
                         <option value="employee">Employee</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
@@ -314,6 +421,21 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
+
+                            // Sidebar Toggle
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const mainContainer = document.querySelector('.main-container');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                if (sidebar.classList.contains('active')) {
+                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+                } else {
+                    mainContainer.style.marginLeft = '80px'; /* Default margin */
+                }
+            });
+
         $(document).ready(function() {
             $('#userTable').DataTable();
 
@@ -365,7 +487,6 @@
             };
         });
     </script>
-
 
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}

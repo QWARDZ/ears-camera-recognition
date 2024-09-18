@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Departments</title>
+    <title>Manage Shifts</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <style>
         /* Global styles */
@@ -16,6 +16,7 @@
 
         /* Main container for the content */
         .main-container {
+            max-width: 1905px;
             margin-left: 75px;
             padding: 20px;
             background-color: #dbdada;
@@ -38,8 +39,8 @@
         }
 
         .btn-primary {
-            background-color: #007bff;
-            color: #e0c2c2;
+            background-color: #26c726;
+            color: #ffffff;
             border: none;
             padding: 8px 12px;
             font-size: 14px;
@@ -49,7 +50,7 @@
         }
 
         .btn-primary:hover {
-            background-color: #171d24;
+            background-color: #0056b3;
         }
 
         /* Table styles */
@@ -109,7 +110,6 @@
 
         .btn-primary {
             background-color: #26c726;
-            color: #fff;
         }
 
         .btn-danger {
@@ -272,29 +272,29 @@
 
     <div class="main-container">
         <div class="header-section">
-            <h1>Manage Departments</h1>
-            <button class="btn btn-primary" onclick="showAddDepartmentForm()">+ Add New Department</button>
+            <h1>Manage Shifts</h1>
+            <button class="btn btn-primary" onclick="showAddShiftForm()">+ Add New Shift</button>
         </div>
 
         <div class="table-container">
-            <table id="departmentTable" class="display">
+            <table id="shiftTable" class="display">
                 <thead>
                     <tr>
                         <th class="col-small">#</th>
-                        <th class="col-small">ID</th>
-                        <th class="col-wide">Department Name</th>
+                        <th class="col-time">Start Time</th>
+                        <th class="col-time">End Time</th>
                         <th class="col-medium">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for department in departments %}
+                    {% for shift in shifts %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ department[0] }}</td>
-                        <td>{{ department[1] }}</td>
+                        <td>{{ shift[1] }}</td>
+                        <td>{{ shift[2] }}</td>
                         <td>
-                            <button class="btn btn-primary" onclick="editDepartment('{{ department[0] }}', '{{ department[1] }}')">Edit</button>
-                            <form method="POST" action="/admin/departments/delete/{{ department[0] }}" style="display:inline;">
+                            <button class="btn btn-primary" onclick="editShift('{{ shift[0] }}', '{{ shift[1] }}', '{{ shift[2] }}')">Edit</button>
+                            <form method="POST" action="/admin/shifts/delete/{{ shift[0] }}" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
                         </td>
@@ -305,14 +305,19 @@
         </div>
     </div>
 
-    <div id="departmentModal" class="modal">
+    <!-- Modal for Adding/Editing Shift -->
+    <div id="shiftModal" class="modal">
         <div class="modal-content">
-            <h2>Department Master Data</h2>
-            <form method="POST" action="/admin/departments">
-                <input type="hidden" id="department_id" name="department_id">
+            <h2>Shift Data</h2>
+            <form method="POST" action="/admin/shifts">
+                <input type="hidden" id="shift_id" name="shift_id">
                 <div class="form-group">
-                    <label for="department_name">Department Name</label>
-                    <input type="text" id="department_name" name="department_name" required>
+                    <label for="start_time">Start Time</label>
+                    <input type="time" id="start_time" name="start_time" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_time">End Time</label>
+                    <input type="time" id="end_time" name="end_time" required>
                 </div>
                 <button type="submit" class="btn save-btn">Save</button>
                 <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
@@ -324,8 +329,8 @@
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
 
-                    // Sidebar Toggle
-            const sidebar = document.querySelector('.sidebar');
+                            // Sidebar Toggle
+                            const sidebar = document.querySelector('.sidebar');
             const toggleBtn = document.querySelector('.toggle-btn');
             const mainContainer = document.querySelector('.main-container');
 
@@ -337,37 +342,40 @@
                     mainContainer.style.marginLeft = '80px'; /* Default margin */
                 }
             });
-
-
+            
         $(document).ready(function() {
-            $('#departmentTable').DataTable();
+            $('#shiftTable').DataTable();
 
-            var departmentModal = document.getElementById("departmentModal");
-            var departmentNameInput = document.getElementById("department_name");
-            var departmentIdInput = document.getElementById("department_id");
+            var shiftModal = document.getElementById("shiftModal");
+            var shiftIdInput = document.getElementById("shift_id");
+            var startTimeInput = document.getElementById("start_time");
+            var endTimeInput = document.getElementById("end_time");
 
-            window.showAddDepartmentForm = function() {
-                departmentNameInput.value = '';
-                departmentIdInput.value = ''; 
-                departmentModal.style.display = "block";
+            window.showAddShiftForm = function() {
+                shiftIdInput.value = '';
+                startTimeInput.value = '';
+                endTimeInput.value = '';
+                shiftModal.style.display = "block";
             };
 
-            window.editDepartment = function(id, name) {
-                departmentIdInput.value = id;
-                departmentNameInput.value = name;
-                departmentModal.style.display = "block";
+            window.editShift = function(id, start_time, end_time) {
+                shiftIdInput.value = id;
+                startTimeInput.value = start_time;
+                endTimeInput.value = end_time;
+                shiftModal.style.display = "block";
             };
 
             window.closeModal = function() {
-                departmentModal.style.display = "none";
+                shiftModal.style.display = "none";
             };
 
             window.onclick = function(event) {
-                if (event.target == departmentModal) {
-                    departmentModal.style.display = "none";
+                if (event.target == shiftModal) {
+                    shiftModal.style.display = "none";
                 }
             };
         });
     </script>
+
 </body>
 </html>
