@@ -281,8 +281,8 @@
                 <thead>
                     <tr>
                         <th class="col-small">#</th>
-                        <th class="col-time">Start Time</th>
-                        <th class="col-time">End Time</th>
+                        <th class="col-timee">Start Time</th>
+                        <th class="col-timee">End Time</th>
                         <th class="col-medium">Actions</th>
                     </tr>
                 </thead>
@@ -290,8 +290,8 @@
                     {% for shift in shifts %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ shift[1] }}</td>
-                        <td>{{ shift[2] }}</td>
+                        <td class="col-time">{{ shift[1] }}</td> <!-- Start Time (raw data) -->
+                        <td class="col-time">{{ shift[2] }}</td> <!-- End Time (raw data) -->                        
                         <td>
                             <button class="btn btn-primary" onclick="editShift('{{ shift[0] }}', '{{ shift[1] }}', '{{ shift[2] }}')">Edit</button>
                             <form method="POST" action="/admin/shifts/delete/{{ shift[0] }}" style="display:inline;">
@@ -375,6 +375,32 @@
                 }
             };
         });
+
+
+    // JavaScript function to format time from 24-hour to 12-hour format with AM/PM
+    function formatTime(time) {
+        let [hours, minutes] = time.split(':');
+        let ampm = 'AM';
+        hours = parseInt(hours);
+
+        if (hours >= 12) {
+            ampm = 'PM';
+            if (hours > 12) hours -= 12;
+        } else if (hours === 0) {
+            hours = 12;
+        }
+
+        return `${hours}:${minutes} ${ampm}`;
+    }
+
+    // Apply the time formatting function to display 12-hour format with AM/PM in the table
+    document.addEventListener('DOMContentLoaded', function () {
+        const timeCells = document.querySelectorAll('.col-time');
+        timeCells.forEach(cell => {
+            cell.textContent = formatTime(cell.textContent);
+        });
+    });
+
     </script>
 
 </body>

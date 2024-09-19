@@ -185,20 +185,22 @@
             <input type="date" name="end_date" required>
             <select name="department" required>
                 <option value="">Select Department</option>
+                <option value="all">All Departments</option> <!-- Add this option -->
                 {% for department in departments %}
-                <option value="{{ department[0] }}">{{ department[1] }}</option>
+                    <option value="{{ department[0] }}">{{ department[1] }}</option>
                 {% endfor %}
             </select>
+            
             <button type="submit">Show</button>
         </form>
 
-        <!-- Table for displaying attendance data -->
         <table class="attendance-table">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Date</th>
+                    <th>Profile</th>
                     <th>Employee Name</th>
+                    <th>Date</th>
                     <th>Department</th>
                     <th>Check In</th>
                     <th>Check Out</th>
@@ -210,15 +212,22 @@
                 <!-- Loop through attendance records -->
                 {% for record in attendance_records %}
                 <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ record[5] }}</td>
-                    <td>{{ record[0] }} {{ record[1] }}</td>
-                    <td>{{ record[2] }}</td>
-                    <td>{{ record[3] }}</td>
-                    <td>{{ record[4] }}</td>
-                    <td>{{ record[6] }}</td> <!-- Status (Late, Early, Overtime) -->
+                    <td>{{ loop.index }}</td> <!-- Index number -->
                     <td>
-                        <button onclick="populateForm('{{ record[0] }}', '{{ record[1] }}', '{{ record[3] }}', '{{ record[4] }}', '{{ record[6] }}', '{{ record[7] }}')">Update</button>
+                        {% if record[2] %} <!-- Profile Picture -->
+                            <img src="{{ url_for('static', filename='uploads/' ~ record[2]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='uploads/default.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                        {% endif %}
+                    </td>
+                    <td>{{ record[0] }} {{ record[1] }}</td> <!-- Employee Name (First Name, Last Name) -->
+                    <td>{{ record[8] }}</td> <!-- Date -->
+                    <td>{{ record[3] }}</td> <!-- Department -->
+                    <td>{{ record[4] }}</td> <!-- Check In -->
+                    <td>{{ record[5] }}</td> <!-- Check Out -->
+                    <td>{{ record[6] }}</td> <!-- Status -->
+                    <td>
+                        <button onclick="populateForm('{{ record[0] }}', '{{ record[1] }}', '{{ record[4] }}', '{{ record[5] }}', '{{ record[6] }}', '{{ record[7] }}')">Update</button>
                         <form method="POST" action="/admin/attendance/delete/{{ record[7] }}" style="display:inline;">
                             <button type="submit">Delete</button>
                         </form>
@@ -227,6 +236,9 @@
                 {% endfor %}
             </tbody>
         </table>
+        
+        
+        
 
     </div>
 

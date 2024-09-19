@@ -5,152 +5,172 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Profile</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f2f5;
+    padding: 0;
+    margin: 0;
+}
 
-        .profile-container {
-            max-width: 800px;
-            margin: 50px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+/* Container for the profile */
+.profile-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
-        .profile-header {
-            display: flex;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-        }
+/* Profile header with picture and name */
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 20px;
+}
 
-        .profile-header img {
-            border-radius: 50%;
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            margin-right: 20px;
-        }
+/* Profile name */
+.profile-header h2 {
+    font-size: 28px;
+    color: #333;
+    margin: 0;
+}
 
-        .profile-header h1 {
-            font-size: 24px;
-            color: #343a40;
-            margin: 0;
-        }
+/* Profile picture */
+.profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #007bff;
+}
 
-        .profile-info {
-            margin-top: 20px;
-        }
+/* Profile information section */
+.profile-info {
+    margin-top: 30px;
+}
 
-        .profile-info h2 {
-            font-size: 18px;
-            background-color: #343a40;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
+.profile-info h3 {
+    font-size: 22px;
+    color: #007bff;
+    margin-bottom: 15px;
+}
 
-        .profile-info .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
+/* Information labels */
+.profile-info p {
+    font-size: 16px;
+    color: #555;
+    margin: 10px 0;
+}
 
-        .profile-info .info-row label {
-            font-weight: bold;
-            color: #555;
-        }
+.profile-info span {
+    font-weight: bold;
+    color: #333;
+}
 
-        .profile-info .info-row span {
-            color: #555;
-        }
+/* Form for uploading profile picture */
+.upload-form {
+    margin-top: 30px;
+}
 
-        /* Form styling */
-        .profile-picture-form {
-            margin-top: 20px;
-        }
+.upload-form label {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+    display: block;
+}
 
-        .profile-picture-form label {
-            font-weight: bold;
-        }
+.upload-form input[type="file"] {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 16px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
 
-        .profile-picture-form input[type="file"] {
-            margin-bottom: 10px;
-        }
+.upload-form button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
 
-        .profile-picture-form button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+.upload-form button:hover {
+    background-color: #0056b3;
+}
 
-        .profile-picture-form button:hover {
-            background-color: #218838;
-        }
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 20px;
+    }
 
-        @media (max-width: 768px) {
-            .profile-container {
-                padding: 15px;
-            }
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
 
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-            }
+    .profile-header h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
 
-            .profile-header img {
-                margin-right: 0;
-                margin-bottom: 10px;
-            }
-        }
+    .profile-picture {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-info h3 {
+        font-size: 20px;
+    }
+
+    .profile-info p {
+        font-size: 14px;
+    }
+
+    .upload-form label, 
+    .upload-form input[type="file"], 
+    .upload-form button {
+        font-size: 14px;
+        width: 100%;
+    }
+}
+
     </style>
 </head>
 <body>
 
+    {% include 'layout/employee_nav.html' %}
+
     <div class="profile-container">
         <div class="profile-header">
-            <img src="/static/profile_pictures/{{ employee.profile_picture }}" alt="Employee Picture">
-            <h1>{{ employee.name }}</h1>
+            <h2>{{ employee.first_name }} {{ employee.last_name }}</h2>
+            <img src="{{ employee.profile_picture_url or '/static/default_profile.png' }}" alt="Profile Picture" class="profile-picture">
         </div>
 
         <div class="profile-info">
-            <h2>Information</h2>
-            <div class="info-row">
-                <label>Employee ID</label>
-                <span>{{ employee.employee_id }}</span>
-            </div>
-            <div class="info-row">
-                <label>Gender</label>
-                <span>{{ employee.gender }}</span>
-            </div>
-            <div class="info-row">
-                <label>Department</label>
-                <span>{{ employee.department }}</span>
-            </div>
-            <div class="info-row">
-                <label>Birthday</label>
-                <span>{{ employee.birthday }}</span>
-            </div>
-            <div class="info-row">
-                <label>Joined On</label>
-                <span>{{ employee.joined_on }}</span>
-            </div>
+            <h3>Information</h3>
+            <p><span>Gender:</span> {{ employee.gender }}</p>
+            <p><span>Department:</span> {{ employee.department }}</p>
+            <p><span>Shift:</span> {{ employee.shift }}</p> <!-- This now shows the shift time in AM/PM format -->
         </div>
 
-        <!-- Profile Picture Upload Form -->
-        <div class="profile-picture-form">
-            <form action="/employee/upload_picture" method="POST" enctype="multipart/form-data">
+        <!-- Upload profile picture form -->
+        <div class="upload-form">
+            <form action="/employee/profile/upload" method="POST" enctype="multipart/form-data">
                 <label for="profile_picture">Upload Profile Picture:</label>
-                <input type="file" name="profile_picture" required>
-                <button type="submit">Upload Picture</button>
+                <input type="file" name="profile_picture" id="profile_picture" accept="image/*" required>
+                <button type="submit">Upload</button>
             </form>
         </div>
     </div>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee History</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .history-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            color: #343a40;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .history-table th, .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .history-table th {
+            background-color: #343a40;
+            color: white;
+            font-size: 16px;
+        }
+
+        .history-table td {
+            background-color: #f9f9f9;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .history-table .profile-picture {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .history-table th, .history-table td {
+                padding: 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'layout/employee_nav.html' %}
+
+    <div class="history-container">
+        <h1>Attendance History</h1>
+
+        <!-- Attendance history table -->
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Profile</th>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Shift Time</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        <img src="{% if record[3] %}{{ url_for('static', filename='uploads/' ~ record[3]) }}{% else %}/static/default_profile.png{% endif %}" alt="Profile Picture" class="profile-picture">
+                    </td>
+                    <td>{{ record[4] }}</td> <!-- Full Name -->
+                    <td>{{ record[0] }}</td> <!-- Date -->
+                    <td>{{ record[5] }}</td> <!-- Shift Time -->
+                    <td>{{ record[1] }}</td> <!-- Check In -->
+                    <td>{{ record[2] }}</td> <!-- Check Out -->
+                    <td>{{ record[6] }}</td> <!-- Status -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

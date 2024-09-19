@@ -6,177 +6,152 @@
     <title>Manage Users</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <style>
-        /* Global styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
+/* Global styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Main container for the content */
-        .main-container {
-            max-width: 1905px;
-            margin-left: 75px;
-            padding: 20px;
-            background-color: #dbdada;
-            transition: margin-left 0.5s ease; /* Smooth sliding effect */
-        }
+/* Main container for the content */
+.main-container {
+    max-width: 1905px;
+    margin-left: 75px;
+    padding: 20px;
+    background-color: #dbdada;
+    transition: margin-left 0.5s ease; /* Smooth sliding effect */
+}
 
-        /* Header section for title and button */
-        .header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap; /* Ensure proper alignment on smaller screens */
-        }
+/* Header section for title and button */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Ensure proper alignment on smaller screens */
+}
 
-        .header-section h1 {
-            font-size: 24px;
-            color: #343a40;
-            margin-bottom: 10px; /* Add space below title */
-        }
+.header-section h1 {
+    font-size: 24px;
+    color: #343a40;
+    margin-bottom: 10px; /* Add space below title */
+}
 
-        /* Black table header styles */
-        th {
-            background-color: #343a40; /* Set background to black */
-            color: #fff; /* Set text color to white for contrast */
-            padding: 10px; /* Keep the padding for spacing */
-            text-align: left; /* Align text to the left */
-            border-bottom: 1px solid #dee2e6; /* Add a bottom border for separation */
-        }
-
-        .btn-primary {
-    background-color: #26c726;    /* Bootstrap primary color */
-    color: #fff; /* White text */
+.btn-primary {
+    background-color: #26c726;
+    color: #ffffff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .btn-primary:hover {
-    background-color: #c4d8c8; /* Darker blue on hover */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow on hover */
+    background-color: #0056b3;
 }
 
+/* Table styles */
+.table-container {
+    margin-top: 20px;
+    width: 100%;
+    overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
+}
 
-        /* General button styling */
+table.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    table-layout: auto; /* Allows dynamic resizing */
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Specific Column Width Adjustments */
+th.col-small, td.col-small {
+    width: 50px; /* Width for # and ID */
+}
+
+th.col-wide, td.col-wide {
+    width: 40%; /* Wider width for Full Name */
+}
+
+th.col-medium, td.col-medium {
+    width: 20%; /* Medium width for Actions */
+}
+
+th {
+    background-color: #343a40;
+    color: #fff;
+}
+
+td {
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Buttons in table */
 .btn {
-    padding: 8px 12px; /* Adjust padding for a balanced look */
-    font-size: 14px; /* Consistent font size */
-    border-radius: 4px; /* Rounded corners */
-    border: none; /* No border for a sleek look */
-    cursor: pointer; /* Pointer cursor for buttons */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-right: 5px;
+    border: none;
+    cursor: pointer;
 }
 
-/* Delete button styles */
+.btn-primary {
+    background-color: #26c726;
+}
+
 .btn-danger {
-    background-color: #dc3545;/* Soft red color for delete */
-    color: #fff; /* White text */
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #c4d8c8;
 }
 
 .btn-danger:hover {
-    background-color: #c4d8c8; /* Darker red on hover */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow on hover */
+    background-color: #c4d8c8;
 }
 
-/* Button container styling (optional for better layout control) */
-td.col-medium .btn {
-    margin-right: 5px; /* Add spacing between Edit and Delete buttons */
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
 }
 
-        /* Table styles */
-        .table-container {
-            margin-top: 20px;
-            width: 100%;
-            overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
-        }
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 10px;
+}
 
-        table.dataTable {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            table-layout: auto; /* Allows dynamic resizing */
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        /* Specific Column Width Adjustments */
-        th.col-small, td.col-small {
-            width: 5%; /* Width for # column */
-        }
-
-        th.col-wide, td.col-wide {
-            width: 20%; /* Width for wide columns such as First Name, Last Name, etc. */
-        }
-
-        th.col-medium, td.col-medium {
-            width: 15%; /* Increase width for Actions column */
-        }
-
-        /* Ensure the buttons are aligned side by side */
-        td.col-medium {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Add some margin to space out the buttons */
-        td .btn {
-            margin-right: 5px; /* Add spacing between the buttons */
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            border-radius: 10px;
-        }
-
-        .form-group {
-            margin-top: 0;
-            margin-bottom: 5px; /* Provide consistent spacing between input fields */
-            display: flex;
-            flex-direction: column;       
-        }
-
-        label {
-            font-size: 14px;
-            color: #495057;
-            margin-bottom: 5px; /* Add space between label and input */
-        }
-
-
-        /* Specific styling for DataTables search input */
 /* Reset styling for DataTables "Show entries" dropdown */
 .dataTables_length select {
     width: auto; /* Original width for dropdown */
     padding: 3px; /* Original padding */
-    font-size: 14px; /* Restore original font size */
+    font-size: 10px; /* Restore original font size */
     border: 1px solid #ced4da; /* Default border */
     border-radius: 4px; /* Default rounded corners */
     background-color: #fff; /* Default background color */
@@ -184,131 +159,126 @@ td.col-medium .btn {
 }
 
 
+.form-group {
+    margin-bottom: 15px;
+}
 
-input[type="text"],
-select {
-    width: 100%; /* Ensure full width for input and select */
+label {
+    font-size: 14px;
+    color: #495057;
+}
+
+input[type="text"], select {
+    width: 100%;
     padding: 8px;
     font-size: 14px;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    box-sizing: border-box; /* Prevent overflow */
-    margin-top: 5px;
 }
 
-        .save-btn {
-            background-color: #28a745;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
-        }
-
-        .cancel-btn {
-            background-color: #6c757d;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-left: 10px;
-        }
-
-        /* DataTables adjustments */
-        .dataTables_wrapper .dataTables_length, 
-        .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 15px;
-        }
-
-        .dataTables_length label,
-        .dataTables_filter label {
-            font-size: 14px;
-        }
-
-        .dataTables_length select,
-        .dataTables_filter input {
-            border: 1px solid #ced4da;
-            padding: 5px;
-            border-radius: 4px;
-        }
-
-        .dataTables_wrapper .dataTables_length {
-            float: left;
-        }
-
-        .dataTables_wrapper .dataTables_filter {
-            float: right;
-        }
-
-        /* Mobile view and smaller screens adjustments */
-        @media (max-width: 768px) {
-            /* Remove sidebar margin on smaller screens */
-            .main-container {
-                margin-left: 0;
-                padding: 10px;
-            }
-
-            /* Stack title and button vertically on small screens */
-            .header-section {
-                flex-direction: column;
-                align-items: flex-start;
-                width: 100%;        
-                position: relative;
-            }
-
-            .header-section .btn-primary {
-                align-self: flex-end; /* Align button to the right */
-                margin-top: 5px; /* Add space above the button */
-            }
-
-            /* Table container: Allow scrolling on smaller screens */
-            .table-container {
-                margin-top: 10px;
-                overflow-x: scroll;
-            }
-
-            /* Adjust DataTables controls for small screens */
-            .dataTables_wrapper .dataTables_length,
-            .dataTables_wrapper .dataTables_filter {
-                float: none;
-                text-align: center;
-                margin-bottom: 10px;
-            }
-
-            /* Table layout adjustments for smaller screens */
-            table.dataTable {
-                width: 100%;
-                table-layout: auto; /* Ensure proper table layout */
-            }
-
-            th.col-small, td.col-small {
-                width: 30px; /* Adjust width for smaller screens */
-            }
-
-            th.col-wide, td.col-wide {
-                width: 50%; /* Adjust Department Name width */
-            }
-
-            th.col-medium, td.col-medium {
-                width: 20%; /* Adjust Actions width */
-            }
-
-            /* Smaller buttons on small screens */
-            .btn {
-                font-size: 10px;
-                padding: 5px 8px;
-            }
-        }
-
-
-
-        /* Specific Column Width Adjustments */
-th:nth-child(1) { /* # Column */
-    width: 5%;
+.save-btn {
+    background-color: #28a745;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
 }
-th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5) { /* Full Name, Username, Role, Password */
-    width: 20%; /* Even width for these columns */
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-left: 10px;
 }
-th:nth-child(6) { /* Actions Column */
-    width: 15%; /* Slightly larger for actions */
+
+/* DataTables adjustments */
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 15px;
 }
+
+.dataTables_length label,
+.dataTables_filter label {
+    font-size: 14px;
+}
+
+.dataTables_length select,
+.dataTables_filter input {
+    border: 1px solid #ced4da;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_length {
+    float: left;
+}
+
+.dataTables_wrapper .dataTables_filter {
+    float: right;
+}
+
+/* Mobile view and smaller screens adjustments */
+@media (max-width: 768px) {
+    /* Remove sidebar margin on smaller screens */
+    .main-container {
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    /* Stack title and button vertically on small screens */
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;        
+        position: relative;
+    }
+
+    .header-section .btn-primary {
+        align-self: flex-end; /* Align button to the right */
+        margin-top: 5px; /* Add space above the button */
+    }
+
+    /* Table container: Allow scrolling on smaller screens */
+    .table-container {
+        margin-top: 10px;
+        overflow-x: scroll;
+    }
+
+    /* Adjust DataTables controls for small screens */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        float: none;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    /* Table layout adjustments for smaller screens */
+    table.dataTable {
+        width: 100%;
+        table-layout: auto; /* Ensure proper table layout */
+    }
+
+    th.col-small, td.col-small {
+        width: 30px; /* Adjust width for smaller screens */
+    }
+
+    th.col-wide, td.col-wide {
+        width: 50%; /* Adjust Full Name width */
+    }
+
+    th.col-medium, td.col-medium {
+        width: 20%; /* Adjust Actions width */
+    }
+
+    /* Smaller buttons on small screens */
+    .btn {
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+}
+
+
+
 
     </style>
 </head>
@@ -327,10 +297,12 @@ th:nth-child(6) { /* Actions Column */
                 <thead>
                     <tr>
                         <th>#</th>
+                        <th>Profile</th> <!-- Profile picture column -->
                         <th>Full Name</th>
                         <th>Username</th>
+                        <th>Password</th> <!-- New Password Column -->
                         <th>Role</th>
-                        <th>Password</th>
+                        <th>Shift Time</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -338,10 +310,18 @@ th:nth-child(6) { /* Actions Column */
                     {% for user in users %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ user[1] }}</td>
-                        <td>{{ user[2] }}</td>
-                        <td>{{ user[3] }}</td>
-                        <td>{{ user[4] }}</td>
+                        <td>
+                            {% if user[7] %} <!-- Checking if profile_picture exists -->
+                                <img src="{{ url_for('static', filename='uploads/' ~ user[7]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                            {% endif %}
+                        </td>
+                        <td>{{ user[1] }}</td> <!-- Full Name -->
+                        <td>{{ user[2] }}</td> <!-- Username -->
+                        <td>{{ user[4] }}</td> <!-- Password --> <!-- Displaying password -->
+                        <td>{{ user[3] }}</td> <!-- Role -->
+                        <td class="shift-time">{{ user[5] }} - {{ user[6] }}</td> <!-- Shift Time -->
                         <td>
                             <button class="btn btn-primary" onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}')">Edit</button>
                             <form method="POST" action="/admin/user/delete/{{ user[0] }}" style="display:inline;">
@@ -486,19 +466,37 @@ th:nth-child(6) { /* Actions Column */
                 }
             };
         });
-    </script>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div>
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-{% endwith %}
+        
+            // JavaScript function to format time from 24-hour to 12-hour format with AM/PM
+    function formatTime(time) {
+        let [hours, minutes] = time.split(':');
+        let ampm = 'AM';
+        hours = parseInt(hours);
+
+        if (hours >= 12) {
+            ampm = 'PM';
+            if (hours > 12) hours -= 12;
+        } else if (hours === 0) {
+            hours = 12;
+        }
+
+        return `${hours}:${minutes} ${ampm}`;
+    }
+
+    // Apply the time formatting function to display 12-hour format with AM/PM in the Shift column
+    document.addEventListener('DOMContentLoaded', function () {
+        const shiftCells = document.querySelectorAll('.shift-time');
+        shiftCells.forEach(cell => {
+            // Check if the cell contains a time range
+            if (cell.textContent.includes('-')) {
+                let [startTime, endTime] = cell.textContent.split(' - ');
+                cell.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+            }
+        });
+    });
+
+    </script>
 
 </body>
 </html>

@@ -361,7 +361,7 @@
         }
     </style>
 </head>
-<body>
+</body>
 
     {% include 'layout/admin_nav.html' %}
 
@@ -376,6 +376,7 @@
                 <thead>
                     <tr>
                         <th class="col-small">#</th>
+                        <th class="col-picture">Profile</th>
                         <th class="col-wide">First Name</th>
                         <th class="col-wide">Last Name</th>
                         <th class="col-wide">Department</th>
@@ -388,21 +389,28 @@
                     {% for employee in employees %}
                     <tr>
                         <td>{{ loop.index }}</td>
+                        <td class="col-picture">
+                            {% if employee[6] %}
+                                <img src="{{ url_for('static', filename='uploads/' + employee[6]) }}" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 50px; height: 50px; border-radius: 50%;">
+                            {% endif %}
+                        </td>                        
                         <td>{{ employee[1] }}</td> <!-- First Name -->
                         <td>{{ employee[2] }}</td> <!-- Last Name -->
                         <td>{{ employee[3] }}</td> <!-- Department -->
-                        <td>{{ employee[4] }}</td> <!-- Shift Time -->
+                        <td class="shift-time">{{ employee[4] }}</td> <!-- Shift Time -->
                         <td>{{ employee[5] }}</td> <!-- Gender -->
                         <td class="col-medium">
-                            <button class="btn btn-primary" onclick="editEmployee('{{ employee[0] }}', '{{ employee[1] }}', '{{ employee[2] }}', '{{ employee[3] }}', '{{ employee[4] }}', '{{ employee[5] }}')">Edit</button>
+                            <button class="btn btn-primary" onclick="editEmployee('{{ employee[0] }}', '{{ employee[1] }}', '{{ employee[2] }}', '{{ employee[3] }}', '{{ employee[4] }}', '{{ employee[5] }}', '{{ employee[6] }}')">Edit</button>
                             <form method="POST" action="/admin/employees/delete/{{ employee[0] }}" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
                         </td>
                     </tr>
                     {% endfor %}
-                    
                 </tbody>
+                
             </table>
         </div>
     </div>
@@ -410,16 +418,19 @@
     <div id="employeeModal" class="modal">
         <div class="modal-content">
             <h2>Employee Master Data</h2>
-            <form method="POST" action="/admin/employees">
+            <form method="POST" action="/admin/employees" enctype="multipart/form-data">
                 <input type="hidden" id="employee_id" name="employee_id">
+                
                 <div class="form-group">
                     <label for="first_name">First Name</label>
                     <input type="text" id="first_name" name="first_name" required>
                 </div>
+
                 <div class="form-group">
                     <label for="last_name">Last Name</label>
                     <input type="text" id="last_name" name="last_name" required>
                 </div>
+
                 <div class="form-group">
                     <label for="department">Department</label>
                     <select id="department" name="department" required>
@@ -428,6 +439,7 @@
                         {% endfor %}
                     </select>
                 </div>
+
                 <div class="form-group">
                     <label for="shift">Shift</label>
                     <select id="shift" name="shift" required>
@@ -436,7 +448,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="gender">Gender</label>
                     <select id="gender" name="gender" required>
@@ -445,6 +457,12 @@
                         <option value="Other">Other</option>
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <label for="profile_picture">Profile Picture</label>
+                    <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                </div>
+
                 <button type="submit" class="btn save-btn">Save</button>
                 <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
             </form>
@@ -472,7 +490,7 @@
 
 
 
-        $(document).ready(function() {
+            $(document).ready(function() {
             $('#employeeTable').DataTable();
 
             var employeeModal = document.getElementById("employeeModal");
@@ -482,6 +500,7 @@
             var departmentInput = document.getElementById("department");
             var shiftInput = document.getElementById("shift");
             var genderInput = document.getElementById("gender");
+            var profilePictureInput = document.getElementById("profile_picture");
 
             window.showAddEmployeeForm = function() {
                 employeeIdInput.value = '';
@@ -489,17 +508,19 @@
                 lastNameInput.value = '';
                 departmentInput.value = '';
                 shiftInput.value = '';
-                genderInput.value = 'Male'; 
+                genderInput.value = 'Male';
+                profilePictureInput.value = ''; // Reset the profile picture input
                 employeeModal.style.display = "block";
             };
 
-            window.editEmployee = function(id, first_name, last_name, department, shift, gender) {
+            window.editEmployee = function(id, first_name, last_name, department, shift, gender, profile_picture) {
                 employeeIdInput.value = id;
                 firstNameInput.value = first_name;
                 lastNameInput.value = last_name;
                 departmentInput.value = department;
                 shiftInput.value = shift;
                 genderInput.value = gender;
+                profilePictureInput.value = ''; // Let the user choose to update the picture
                 employeeModal.style.display = "block";
             };
 
@@ -513,6 +534,35 @@
                 }
             };
         });
+
+            // JavaScript function to format time from 24-hour to 12-hour format with AM/PM
+    function formatTime(time) {
+        let [hours, minutes] = time.split(':');
+        let ampm = 'AM';
+        hours = parseInt(hours);
+
+        if (hours >= 12) {
+            ampm = 'PM';
+            if (hours > 12) hours -= 12;
+        } else if (hours === 0) {
+            hours = 12;
+        }
+
+        return `${hours}:${minutes} ${ampm}`;
+    }
+
+    // Apply the time formatting function to display 12-hour format with AM/PM in the Shift column
+    document.addEventListener('DOMContentLoaded', function () {
+        const shiftCells = document.querySelectorAll('.shift-time');
+        shiftCells.forEach(cell => {
+            // Check if the cell contains a time range
+            if (cell.textContent.includes('-')) {
+                let [startTime, endTime] = cell.textContent.split(' - ');
+                cell.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+            }
+        });
+    });
+    
     </script>
 </body>
 </html>
