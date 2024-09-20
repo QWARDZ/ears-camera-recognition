@@ -217,7 +217,7 @@
                         {% if record[2] %} <!-- Profile Picture -->
                             <img src="{{ url_for('static', filename='uploads/' ~ record[2]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
                         {% else %}
-                            <img src="{{ url_for('static', filename='uploads/default.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                            <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
                         {% endif %}
                     </td>
                     <td>{{ record[0] }} {{ record[1] }}</td> <!-- Employee Name (First Name, Last Name) -->

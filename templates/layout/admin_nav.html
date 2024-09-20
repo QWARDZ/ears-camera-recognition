@@ -296,9 +296,9 @@
             <div class="bar3"></div>
         </div>
         <div class="user-info">
-            <span class="user-name">Admin</span>
+            <span class="user-name">{{ user_data[0] }} {{ user_data[1] }}</span>
             <div class="user-avatar">
-                <img src="/static/images/admin-avatar.png" alt="Admin Avatar" id="userIcon">
+                <img src="{{ url_for('static', filename='uploads/' + user_data[2]) if user_data[2] else url_for('static', filename='uploads/default_profile.png') }}" alt="User Avatar" id="userIcon">
                 <div class="dropdown-menu" id="dropdownMenu">
                     <a href="#" class="dropdown-item" id="logoutConfirmLink">Logout</a>
                 </div>

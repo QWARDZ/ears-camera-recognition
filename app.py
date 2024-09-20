@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import random
 import string
 import datetime
+import os
 
 class EmployeeAttendance:
     def __init__(self, name):
@@ -62,6 +63,10 @@ class EmployeeAttendance:
             session.pop('username', None)
             session.pop('role', None)
             return redirect('/')
+        
+        
+#------------------------------------------------------------------------------------
+
 
         # Admin Dashboard Route
         @self.app.route('/admin/dashboard')
@@ -80,20 +85,43 @@ class EmployeeAttendance:
                 # Count shifts
                 cur.execute("SELECT COUNT(*) as shift_count FROM shifts")
                 shift_count = cur.fetchone()[0]
+                
+                # Count Attendance
+                cur.execute("SELECT COUNT(*) as attendance_count FROM attendance")
+                attendance_count = cur.fetchone()[0]
 
                 # Count users
                 cur.execute("SELECT COUNT(*) as user_count FROM users")
                 user_count = cur.fetchone()[0]
 
+                # Fetch user details based on the logged-in username
+                cur.execute("""
+                    SELECT e.first_name, e.last_name, e.profile_picture
+                    FROM users u
+                    LEFT JOIN employees e ON u.employee_id = e.id
+                    WHERE u.username = %s
+                """, [session['username']])
+                user_data = cur.fetchone()
+
+                # Check if user data is found, otherwise set default values
+                if user_data:
+                    user_name = f"{user_data[0]} {user_data[1]}"
+                    user_profile_picture = url_for('static', filename='uploads/' + user_data[2]) if user_data[2] else url_for('static', filename='uploads/default_profile.png')
+                else:
+                    user_name = 'Unknown'
+                    user_profile_picture = url_for('static', filename='uploads/default_profile.png')
+
                 cur.close()
 
-                # Pass the counts to the template
+                # Pass the counts and user details to the template
                 return render_template('admin/dashboard.html', department_count=department_count, 
                                     employee_count=employee_count, shift_count=shift_count, 
-                                    user_count=user_count)
+                                    user_count=user_count, user_name=user_name, 
+                                    user_profile_picture=user_profile_picture, attendance_count=attendance_count, user_data=user_data)
             else:
                 return redirect('/login')
 
+            
             
 #----------------------------------------------------------
             
@@ -103,6 +131,17 @@ class EmployeeAttendance:
         def manage_departments():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
+                
+                
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+                
+                #---------------------------------------------------
 
                 if request.method == 'POST':
                     department_id = request.form.get('department_id') 
@@ -131,7 +170,7 @@ class EmployeeAttendance:
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
                 cur.close()
-                return render_template('admin/departments.html', departments=departments)
+                return render_template('admin/departments.html', departments=departments, user_data=user_data)
             else:
                 return redirect('/login')
 
@@ -156,12 +195,20 @@ class EmployeeAttendance:
         def allowed_file(filename):
             return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-        # Employee Management Routes
         @self.app.route('/admin/employees', methods=['GET', 'POST'])
         def manage_employees():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
 
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+
+                # Handle POST request for adding or updating employee details
                 if request.method == 'POST':
                     employee_id = request.form.get('employee_id')
                     first_name = request.form['first_name']
@@ -191,21 +238,33 @@ class EmployeeAttendance:
                                 (first_name, last_name, department, shift, gender, employee_id)
                             )
                     else:
-                        # Insert new employee with or without profile picture
+                        # Insert new employee
                         cur.execute(
                             "INSERT INTO employees (first_name, last_name, department, shift, gender, profile_picture) VALUES (%s, %s, %s, %s, %s, %s)",
                             (first_name, last_name, department, shift, gender, profile_picture_filename)
                         )
 
+                        # Get the new employee's ID
+                        cur.execute("SELECT LAST_INSERT_ID()")
+                        new_employee_id = cur.fetchone()[0]
+
+                        # Automatically create a user for the new employee
+                        username = request.form['username']
+                        password = request.form['password']
+                        cur.execute("INSERT INTO users (username, password, role, employee_id) VALUES (%s, %s, 'employee', %s)", 
+                                    (username, password, new_employee_id))
+
                     self.mysql.connection.commit()
                     return redirect('/admin/employees')
 
-                # Fetch employees with departments, shifts, and profile pictures
+                # Fetch only employee data (excluding admin users)
                 cur.execute("""
                     SELECT e.id, e.first_name, e.last_name, d.name, CONCAT(s.start_time, ' - ', s.end_time) AS shift_time, e.gender, e.profile_picture
                     FROM employees e
                     LEFT JOIN departments d ON e.department = d.id
                     LEFT JOIN shifts s ON e.shift = s.id
+                    LEFT JOIN users u ON u.employee_id = e.id
+                    WHERE u.role = 'employee'
                 """)
                 employees = cur.fetchall()
 
@@ -220,69 +279,106 @@ class EmployeeAttendance:
                 cur.close()
 
                 # Render the employee management page with employees, departments, and shifts data
-                return render_template('admin/employees.html', employees=employees, departments=departments, shifts=shifts)
+                return render_template('admin/employees.html', employees=employees, departments=departments, shifts=shifts, user_data=user_data)
             else:
                 return redirect('/login')
-            
-            
-            @self.app.route('/admin/employees/delete/<string:employee_id>', methods=['POST'])
-            def delete_employee(employee_id):
-                if 'username' in session and session['role'] == 'admin':
-                    cur = self.mysql.connection.cursor()
+
+        # Route for deleting an employee and associated data
+        @self.app.route('/admin/employees/delete/<int:employee_id>', methods=['POST'])
+        def delete_employee(employee_id):
+            if 'username' in session and session['role'] == 'admin':
+                cur = self.mysql.connection.cursor()
+                try:
+                    # Delete attendance records associated with the employee
+                    cur.execute("DELETE FROM attendance WHERE employee_id = %s", [employee_id])
+
+                    # Delete user associated with the employee
+                    cur.execute("DELETE FROM users WHERE employee_id = %s", [employee_id])
+
+                    # Delete the employee record itself
                     cur.execute("DELETE FROM employees WHERE id = %s", [employee_id])
                     self.mysql.connection.commit()
+
+                    flash("Employee and associated records deleted successfully.", "success")
+                except Exception as e:
+                    flash(f"Error deleting employee: {e}", "danger")
+                finally:
                     cur.close()
-                    return redirect('/admin/employees')
-                else:
-                    return redirect('/login')
+                return redirect('/admin/employees')
+            else:
+                flash("Unauthorized action", "danger")
+                return redirect('/login')
+
             
 
 
 #----------------------------------------------------------------------------------
-        # User Management Route
+
         @self.app.route('/admin/user', methods=['GET', 'POST'])
         def manage_users():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
 
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+
                 if request.method == 'POST':
                     user_id = request.form.get('user_id')
                     first_name = request.form['first_name']
                     last_name = request.form['last_name']
-                    department = request.form['department']
-                    shift = request.form['shift']  # Shift selected from dropdown
-                    gender = request.form['gender']
+                    department = request.form['department'] if request.form.get('role') == 'employee' else None
+                    shift = request.form['shift'] if request.form.get('role') == 'employee' else None
+                    gender = request.form['gender'] if request.form.get('role') == 'employee' else None
                     username = request.form['username']
                     role = request.form['role']
                     password = request.form['password']
 
                     if user_id:
                         # Update employee and user details
-                        cur.execute("UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s WHERE id=%s", 
-                                    (first_name, last_name, department, shift, gender, user_id))
-                        cur.execute("UPDATE users SET username=%s, password=%s, role=%s WHERE id=%s", 
-                                    (username, password, role, user_id))
+                        cur.execute("""
+                            UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s 
+                            WHERE id=%s
+                        """, (first_name, last_name, department, shift, gender, user_id))
+                        cur.execute("""
+                            UPDATE users SET username=%s, password=%s, role=%s 
+                            WHERE id=%s
+                        """, (username, password, role, user_id))
                     else:
                         # Insert new employee and user
-                        cur.execute("INSERT INTO employees (first_name, last_name, department, shift, gender) VALUES (%s, %s, %s, %s, %s)", 
-                                    (first_name, last_name, department, shift, gender))
+                        cur.execute("""
+                            INSERT INTO employees (first_name, last_name, department, shift, gender) 
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (first_name, last_name, department, shift, gender))
                         cur.execute("SELECT LAST_INSERT_ID()")
                         new_employee_id = cur.fetchone()[0]
 
-                        cur.execute("INSERT INTO users (username, password, role, employee_id) VALUES (%s, %s, %s, %s)", 
-                                    (username, password, role, new_employee_id))
+                        cur.execute("""
+                            INSERT INTO users (username, password, role, employee_id) 
+                            VALUES (%s, %s, %s, %s)
+                        """, (username, password, role, new_employee_id))
 
                     self.mysql.connection.commit()
                     return redirect('/admin/user')
 
                 cur.execute("""
-                    SELECT u.id, CONCAT(e.first_name, ' ', e.last_name) AS full_name, u.username, u.role, u.password, s.start_time, s.end_time, e.profile_picture
+                    SELECT u.id, 
+                        CONCAT(COALESCE(e.first_name, 'None'), ' ', COALESCE(e.last_name, '')) AS full_name, 
+                        u.username, 
+                        u.role, 
+                        u.password, 
+                        CASE WHEN u.role = 'employee' THEN COALESCE(s.start_time, '---') ELSE '---' END AS start_time, 
+                        CASE WHEN u.role = 'employee' THEN COALESCE(s.end_time, '---') ELSE '---' END AS end_time, 
+                        e.profile_picture
                     FROM users u
                     LEFT JOIN employees e ON u.employee_id = e.id
                     LEFT JOIN shifts s ON e.shift = s.id
                 """)
                 users = cur.fetchall()
-
 
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
@@ -292,21 +388,40 @@ class EmployeeAttendance:
 
                 cur.close()
 
-                return render_template('admin/user.html', users=users, departments=departments, shifts=shifts)
+                return render_template('admin/user.html', users=users, departments=departments, shifts=shifts, user_data=user_data)
             else:
                 return redirect('/login')
 
 
 
-        # Route for deleting a user
+
+# Route for deleting a user
         @self.app.route('/admin/user/delete/<int:user_id>', methods=['POST'])
         def delete_user(user_id):
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
                 try:
+                    # Retrieve the employee_id associated with this user
+                    cur.execute("SELECT employee_id FROM users WHERE id = %s", [user_id])
+                    employee_id_result = cur.fetchone()
+                    
+                    # Check if an employee_id exists
+                    if employee_id_result:
+                        employee_id = employee_id_result[0]
+                        
+                        # Delete associated attendance records
+                        cur.execute("DELETE FROM attendance WHERE employee_id = %s", [employee_id])
+                        
+                        # Delete employee record
+                        cur.execute("DELETE FROM employees WHERE id = %s", [employee_id])
+                    
+                    # Delete user record
                     cur.execute("DELETE FROM users WHERE id = %s", [user_id])
+                    
+                    # Commit all changes
                     self.mysql.connection.commit()
-                    flash("User deleted successfully", "success")
+                    
+                    flash("User and associated records deleted successfully", "success")
                 except Exception as e:
                     flash(f"Error deleting user: {e}", "danger")
                 finally:
@@ -316,6 +431,7 @@ class EmployeeAttendance:
                 flash("Unauthorized action", "danger")
                 return redirect('/login')
 
+
         
         
 #----------------------------------------------------------------------
@@ -324,6 +440,16 @@ class EmployeeAttendance:
         def manage_shifts():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
+                
+                
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+                #-----------------------------------------------
 
                 if request.method == 'POST':
                     shift_id = request.form.get('shift_id')
@@ -344,7 +470,7 @@ class EmployeeAttendance:
                 shifts = cur.fetchall()
                 cur.close()
 
-                return render_template('admin/shifts.html', shifts=shifts)
+                return render_template('admin/shifts.html', shifts=shifts, user_data=user_data)
             else:
                 return redirect('/login')
 
@@ -370,6 +496,15 @@ class EmployeeAttendance:
         def attendance_report():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
+                
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+                #-----------------------------------------------
 
                 # Get department list for filtering
                 cur.execute("SELECT id, name FROM departments")
@@ -404,7 +539,7 @@ class EmployeeAttendance:
                     attendance_records = cur.fetchall()
 
                 cur.close()
-                return render_template('/admin/attendance.html', departments=departments, attendance_records=attendance_records)
+                return render_template('/admin/attendance.html', departments=departments, attendance_records=attendance_records, user_data=user_data)
             else:
                 return redirect('/login')
 
@@ -463,6 +598,15 @@ class EmployeeAttendance:
         def employee_attendance():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
+                
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+                #-----------------------------------------------
 
                 # Get the employee ID from the users table using the logged-in username
                 cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
@@ -558,7 +702,7 @@ class EmployeeAttendance:
                         return redirect('/employee/attendance')
 
                 cur.close()
-                return render_template('employee/attendance.html', already_checked_in=already_checked_in)
+                return render_template('employee/attendance.html', already_checked_in=already_checked_in, user_data=user_data)
 
             else:
                 return redirect('/login')
@@ -571,6 +715,15 @@ class EmployeeAttendance:
         def employee_profile():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
+                
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+                #-----------------------------------------------
 
                 # Get the employee ID from the users table using the logged-in username
                 cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
@@ -607,7 +760,7 @@ class EmployeeAttendance:
                         'profile_picture_url': url_for('static', filename='uploads/' + employee_data[6]) if employee_data[6] else None
                     }
 
-                    return render_template('employee/profile.html', employee=employee)
+                    return render_template('employee/profile.html', employee=employee, user_data=user_data)
                 else:
                     # If no employee data is found, handle it gracefully
                     flash('Employee data not found.')
@@ -681,6 +834,15 @@ class EmployeeAttendance:
         def employee_history():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
+                
+                # Fetch user data for top bar
+                cur.execute("""
+                    SELECT first_name, last_name, profile_picture
+                    FROM employees
+                    WHERE id = (SELECT employee_id FROM users WHERE username = %s)
+                """, [session['username']])
+                user_data = cur.fetchone()
+                #-----------------------------------------------
 
                 # Get the employee ID from the users table using the logged-in username
                 cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
@@ -707,7 +869,7 @@ class EmployeeAttendance:
 
                 cur.close()
 
-                return render_template('employee/history.html', attendance_records=attendance_records)
+                return render_template('employee/history.html', attendance_records=attendance_records, user_data=user_data)
             else:
                 return redirect('/login')
 

@@ -277,6 +277,15 @@ input[type="text"], select {
     }
 }
 
+        /* Additional Styles for Role-Based Form */
+        .form-group.hidden {
+            display: none;
+        }
+
+        .role-selection {
+            margin-bottom: 20px;
+        }
+
 
 
 
@@ -284,12 +293,13 @@ input[type="text"], select {
 </head>
 <body>
 
+
     {% include 'layout/admin_nav.html' %}
 
     <div class="main-container">
         <div class="header-section">
             <h1>Manage Users</h1>
-            <button class="btn btn-primary" onclick="showAddUserForm()">+ Add New User</button>
+            <button class="btn btn-primary" onclick="showRoleSelection()">+ Add New User</button>
         </div>
 
         <div class="table-container">
@@ -297,41 +307,64 @@ input[type="text"], select {
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Profile</th> <!-- Profile picture column -->
+                        <th>Profile</th>
                         <th>Full Name</th>
                         <th>Username</th>
-                        <th>Password</th> <!-- New Password Column -->
+                        <th>Password</th>
                         <th>Role</th>
                         <th>Shift Time</th>
                         <th>Actions</th>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>
-                            {% if user[7] %} <!-- Checking if profile_picture exists -->
-                                <img src="{{ url_for('static', filename='uploads/' ~ user[7]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
-                            {% endif %}
-                        </td>
-                        <td>{{ user[1] }}</td> <!-- Full Name -->
-                        <td>{{ user[2] }}</td> <!-- Username -->
-                        <td>{{ user[4] }}</td> <!-- Password --> <!-- Displaying password -->
-                        <td>{{ user[3] }}</td> <!-- Role -->
-                        <td class="shift-time">{{ user[5] }} - {{ user[6] }}</td> <!-- Shift Time -->
-                        <td>
-                            <button class="btn btn-primary" onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}')">Edit</button>
-                            <form method="POST" action="/admin/user/delete/{{ user[0] }}" style="display:inline;">
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                    
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                {% if user[7] %}
+                                    <img src="{{ url_for('static', filename='uploads/' ~ user[7]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                                {% endif %}
+                            </td>
+                            <td>{{ user[1] }}</td>
+                            <td>{{ user[2] }}</td>
+                            <td>{{ user[4] }}</td>
+                            <td>{{ user[3] }}</td>
+                            
+                            <!-- Only show Shift Time if the role is 'employee' -->
+                            <td class="shift-time">
+                                {% if user[3] == 'employee' %}
+                                    {{ user[5] }} - {{ user[6] }}
+                                {% else %}
+                                    ---
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                <button class="btn btn-primary" onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}')">Edit</button>
+                                <form method="POST" action="/admin/user/delete/{{ user[0] }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    
+
             </table>
+        </div>
+    </div>
+
+    <!-- Modal for Role Selection -->
+    <div id="roleSelectionModal" class="modal">
+        <div class="modal-content">
+            <h2>Select Role</h2>
+            <div class="role-selection">
+                <button class="btn btn-primary" onclick="showAddUserForm('admin')">Add New Admin</button>
+                <button class="btn btn-primary" onclick="showAddUserForm('employee')">Add New Employee</button>
+                <button class="btn cancel-btn" onclick="closeModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -341,7 +374,8 @@ input[type="text"], select {
             <h2>User Master Data</h2>
             <form method="POST" action="/admin/user">
                 <input type="hidden" id="user_id" name="user_id">
-                
+                <input type="hidden" id="role" name="role"> <!-- Role field for backend processing -->
+
                 <!-- Employee Information -->
                 <div class="form-group">
                     <label for="first_name">First Name</label>
@@ -352,38 +386,32 @@ input[type="text"], select {
                     <input type="text" id="last_name" name="last_name" required>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="gender_field">
                     <label for="gender">Gender</label>
-                    <select id="gender" name="gender" required>
+                    <select id="gender" name="gender">
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="department_field">
                     <label for="department">Department</label>
-                    <select id="department" name="department" required>
+                    <select id="department" name="department">
                         {% for department in departments %}
                             <option value="{{ department[0] }}">{{ department[1] }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="shift_field">
                     <label for="shift">Shift</label>
-                    <select id="shift" name="shift" required>
+                    <select id="shift" name="shift">
                         {% for shift in shifts %}
                             <option value="{{ shift[0] }}">{{ shift[1] }} - {{ shift[2] }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="role">Role</label>
-                    <select id="role" name="role" required>
-                        <option value="admin">Admin</option>
-                        <option value="employee">Employee</option>
-                    </select>
-                </div>
+
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required>
@@ -392,6 +420,7 @@ input[type="text"], select {
                     <label for="password">Password</label>
                     <input type="text" id="password" name="password" required>
                 </div>
+
                 <button type="submit" class="btn save-btn">Save</button>
                 <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
             </form>            
@@ -402,8 +431,8 @@ input[type="text"], select {
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
 
-                            // Sidebar Toggle
-            const sidebar = document.querySelector('.sidebar');
+                                    // Sidebar Toggle
+                                    const sidebar = document.querySelector('.sidebar');
             const toggleBtn = document.querySelector('.toggle-btn');
             const mainContainer = document.querySelector('.main-container');
 
@@ -416,9 +445,11 @@ input[type="text"], select {
                 }
             });
 
+
         $(document).ready(function() {
             $('#userTable').DataTable();
 
+            var roleSelectionModal = document.getElementById("roleSelectionModal");
             var userModal = document.getElementById("userModal");
             var userIdInput = document.getElementById("user_id");
             var firstNameInput = document.getElementById("first_name");
@@ -430,71 +461,101 @@ input[type="text"], select {
             var roleInput = document.getElementById("role");
             var passwordInput = document.getElementById("password");
 
-            window.showAddUserForm = function() {
+            window.showRoleSelection = function() {
+                roleSelectionModal.style.display = "block";
+            };
+
+            window.showAddUserForm = function(role) {
                 userIdInput.value = '';
                 firstNameInput.value = '';
                 lastNameInput.value = '';
                 departmentInput.value = '';
                 shiftInput.value = '';
-                genderInput.value = 'Male'; 
+                genderInput.value = 'Male';
                 usernameInput.value = '';
-                roleInput.value = 'employee';
+                roleInput.value = role;
                 passwordInput.value = '';
+                toggleFormFields(role);
                 userModal.style.display = "block";
+                roleSelectionModal.style.display = "none";
             };
 
-            window.editUser = function(id, first_name, last_name, department, shift, gender, username, role, password) {
+            window.editUser = function(id, first_name, last_name, username, password, role, gender, department, shift) {
                 userIdInput.value = id;
                 firstNameInput.value = first_name;
                 lastNameInput.value = last_name;
-                departmentInput.value = department;
-                shiftInput.value = shift;
-                genderInput.value = gender;
+                departmentInput.value = department || '';
+                shiftInput.value = shift || '';
+                genderInput.value = gender || 'Male';
                 usernameInput.value = username;
                 roleInput.value = role;
                 passwordInput.value = password;
+                toggleFormFields(role);
                 userModal.style.display = "block";
             };
 
             window.closeModal = function() {
                 userModal.style.display = "none";
+                roleSelectionModal.style.display = "none";
             };
 
             window.onclick = function(event) {
-                if (event.target == userModal) {
+                if (event.target == userModal || event.target == roleSelectionModal) {
                     userModal.style.display = "none";
+                    roleSelectionModal.style.display = "none";
                 }
             };
-        });
 
-        
-            // JavaScript function to format time from 24-hour to 12-hour format with AM/PM
-    function formatTime(time) {
-        let [hours, minutes] = time.split(':');
-        let ampm = 'AM';
-        hours = parseInt(hours);
-
-        if (hours >= 12) {
-            ampm = 'PM';
-            if (hours > 12) hours -= 12;
-        } else if (hours === 0) {
-            hours = 12;
-        }
-
-        return `${hours}:${minutes} ${ampm}`;
-    }
-
-    // Apply the time formatting function to display 12-hour format with AM/PM in the Shift column
-    document.addEventListener('DOMContentLoaded', function () {
-        const shiftCells = document.querySelectorAll('.shift-time');
-        shiftCells.forEach(cell => {
-            // Check if the cell contains a time range
-            if (cell.textContent.includes('-')) {
-                let [startTime, endTime] = cell.textContent.split(' - ');
-                cell.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+            // Toggle form fields based on role selection
+            function toggleFormFields(role) {
+                if (role === 'admin') {
+                    document.getElementById("gender_field").classList.add('hidden');
+                    document.getElementById("department_field").classList.add('hidden');
+                    document.getElementById("shift_field").classList.add('hidden');
+                } else {
+                    document.getElementById("gender_field").classList.remove('hidden');
+                    document.getElementById("department_field").classList.remove('hidden');
+                    document.getElementById("shift_field").classList.remove('hidden');
+                }
             }
         });
+
+
+// JavaScript function to format time from 24-hour to 12-hour format with AM/PM
+function formatTime(time) {
+    if (!time || time === '-') {
+        return '-';  // Handle cases where the time is not available
+    }
+    
+    let [hours, minutes] = time.split(':');
+    let ampm = 'AM';
+    hours = parseInt(hours);
+
+    if (hours >= 12) {
+        ampm = 'PM';
+        if (hours > 12) hours -= 12;
+    } else if (hours === 0) {
+        hours = 12;
+    }
+
+    return `${hours}:${minutes} ${ampm}`;
+}
+
+// Apply the time formatting function to display 12-hour format with AM/PM in the table
+document.addEventListener('DOMContentLoaded', function () {
+    const timeCells = document.querySelectorAll('.shift-time');
+    timeCells.forEach(cell => {
+        if (cell.textContent.includes('-')) {
+            let [startTime, endTime] = cell.textContent.split(' - ');
+            startTime = startTime.trim();  // Ensure there's no extra space
+            endTime = endTime.trim();  // Ensure there's no extra space
+            cell.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+        } else {
+            // For single time values, apply formatTime directly
+            cell.textContent = formatTime(cell.textContent);
+        }
     });
+});
 
     </script>
 

@@ -25,6 +25,20 @@
             font-family: 'Poppins', sans-serif;
         }
 
+
+                /* When sidebar is active (expanded), adjust main container */
+        .sidebar.active + .main-container {
+            margin-left: 260px !important;
+            /* transition: margin-left 0.5s ease; */
+        }
+
+        /* Default margin when sidebar is collapsed */
+        .sidebar + .main-container {
+            margin-left: 80px;
+            transition: margin-left 0.5s ease;
+        }
+
+
         .sidebar {
             position: fixed;
             top: 0;
@@ -33,7 +47,8 @@
             height: 100%;
             background:#2c3e50;
             padding: 6px 14px;
-            transition: .5s;
+            /* transition: .5s; */
+            transition: width 0.3s ease-in-out;
         }
 
         .sidebar.active {
@@ -56,9 +71,9 @@
             transition: .3s;
             font-weight: 700;
             text-transform: uppercase;
-            font-family: 'Poppins', sans-serif;
+            /* font-family: 'Poppins', sans-serif; */
             margin-left: 10px;
-            transform: opacity 0.3s ease;
+            /* transform: opacity 0.3s ease; */
         }
 
         .sidebar.active .logo-menu .logo {
@@ -69,7 +84,7 @@
         .sidebar .logo-menu .toggle-btn {
             position: absolute;
             left: 30%;
-            transform: translate(-50);
+            /* transform: translate(-50); */
             width: 40px;
             height: 40px;
             font-size: 22px;
@@ -77,7 +92,7 @@
             text-align: center;
             line-height: 40px;
             cursor: pointer;
-            transition: .5s;
+            /* transition: .5s; */
         }
 
         .sidebar.active .logo-menu .toggle-btn {
@@ -260,11 +275,14 @@
         }
 
         /* Responsive Styles */
-        @media (max-width: 768px) {
+        @media (max-width: 0px) {
             .sidebar {
                 width: 100%;
                 height: auto;
-                position: relative;
+                /* position: relative; */
+            }
+            .main-container{
+                margin-left: 100px;
             }
         }
 
@@ -278,9 +296,9 @@
             <div class="bar3"></div>
         </div>
         <div class="user-info">
-            <span class="user-name">Admin</span>
+            <span class="user-name">{{ user_data[0] }} {{ user_data[1] }}</span>
             <div class="user-avatar">
-                <img src="/static/images/admin-avatar.png" alt="Admin Avatar" id="userIcon">
+                <img src="{{ url_for('static', filename='uploads/' + user_data[2]) if user_data[2] else url_for('static', filename='uploads/default_profile.png') }}" alt="User Avatar" id="userIcon">
                 <div class="dropdown-menu" id="dropdownMenu">
                     <a href="#" class="dropdown-item" id="logoutConfirmLink">Logout</a>
                 </div>
@@ -319,6 +337,7 @@
         </ul>
     </nav>
 
+
     <!-- Logout Modal -->
     <div id="logoutModal" class="modal">
         <div class="modal-content">
@@ -333,13 +352,6 @@
     </div>
 
     <script>
-        // Sidebar Toggle
-        const sidebar = document.querySelector('.sidebar');
-        const toggleBtn = document.querySelector('.toggle-btn');
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-
         // Dropdown and Modal Logic
         const userIcon = document.getElementById("userIcon");
         const dropdownMenu = document.getElementById("dropdownMenu");
@@ -375,6 +387,7 @@
         function toggleHamburger(element) {
             element.classList.toggle("change");
         }
+
     </script>
 </body>
 </html>
