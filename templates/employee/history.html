@@ -15,7 +15,7 @@ body {
 .main-container {
     max-width: 2000px;
     margin-left: 78px;
-    background-color: #e2e2e2;
+    background-color: #ffffff;
     padding: 30px;
     border-radius: 10px;
     transition: margin-left 0.5s ease; /* Smooth sliding effect */
@@ -201,7 +201,7 @@ h1 {
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>
-                        <img src="{% if record[3] %}{{ url_for('static', filename='uploads/' ~ record[3]) }}{% else %}/static/default_profile.png{% endif %}" alt="Profile Picture" class="profile-picture">
+                        <img src="{% if record[3] %}{{ url_for('static', filename='uploads/' ~ record[3]) }}{% else %}/static/uploads/default_profile.png{% endif %}" alt="Profile Picture" class="profile-picture">
                     </td>
                     <td>{{ record[4] }}</td> <!-- Full Name -->
                     <td>{{ record[0] }}</td> <!-- Date -->
@@ -231,6 +231,7 @@ h1 {
                     mainContainer.style.marginLeft = '80px'; /* Default margin */
                 }
             });
+
 
         </script>
 </body>

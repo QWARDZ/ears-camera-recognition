@@ -14,16 +14,13 @@
 
         .main-container {
             margin-left: 75px;
-            margin-top: 0 px;
+            margin-top: 0px;
             background-color: #dbdada;
             padding: 25px;
             transition: margin-left 0.5s ease; /* Smooth sliding effect */
-            /* border-radius: 15px; */
-            /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
         }
 
         h1 {
-            /* text-align: center; */
             margin-bottom: 30px;
             font-size: 26px;
             color: #333;
@@ -32,6 +29,7 @@
         .filter-form {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
             gap: 10px;
         }
@@ -41,7 +39,6 @@
             font-size: 16px;
             border-radius: 8px;
             border: 1px solid #ccc;
-            width: 30%;
         }
 
         .filter-form button {
@@ -178,23 +175,20 @@
 
     <div class="main-container">
         <h1>Attendance Report</h1>
-
-        <!-- Filter form for department and date range -->
+    
+        <!-- Filter Form with Department and Search -->
         <form class="filter-form" method="GET" action="/admin/attendance">
-            <input type="date" name="start_date" required>
-            <input type="date" name="end_date" required>
-            <select name="department" required>
+            <select name="department" onchange="this.form.submit()" required>
                 <option value="">Select Department</option>
-                <option value="all">All Departments</option> <!-- Add this option -->
+                <option value="all">All Departments</option> <!-- Option to show all departments -->
                 {% for department in departments %}
                     <option value="{{ department[0] }}">{{ department[1] }}</option>
                 {% endfor %}
             </select>
-            
-            <button type="submit">Show</button>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="   Search by Employee">
         </form>
-
-        <table class="attendance-table">
+    
+        <table class="attendance-table" id="attendanceTable">
             <thead>
                 <tr>
                     <th>#</th>
@@ -209,7 +203,6 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Loop through attendance records -->
                 {% for record in attendance_records %}
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Index number -->
@@ -236,26 +229,22 @@
                 {% endfor %}
             </tbody>
         </table>
-        
-        
-        
-
     </div>
-
+    
     <!-- Update Form (Hidden by default, displayed when Update is clicked) -->
     <div id="updateForm" class="container-update" style="display:none;">
         <h2>Update Attendance</h2>
-
+    
         <form method="POST" action="/admin/attendance/update">
             <label>Employee Name:</label>
             <input type="text" id="employee_name" disabled>
-
+    
             <label>Check In:</label>
             <input type="time" name="check_in" id="check_in" step="1" required>
-
+    
             <label>Check Out:</label>
             <input type="time" name="check_out" id="check_out" step="1" required>
-
+    
             <label>Status:</label>
             <select name="status" id="status" required>
                 <option value="On Time">On Time</option>
@@ -263,40 +252,57 @@
                 <option value="Early">Early</option>
                 <option value="Overtime">Overtime</option>
             </select>
-
+    
             <!-- Hidden field to store the attendance ID -->
             <input type="hidden" name="attendance_id" id="attendance_id">
-
+    
             <button type="submit" class="update-btn">Update</button>
         </form>
     </div>
+    
     <script>
+        // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const mainContainer = document.querySelector('.main-container');
 
-                            // Sidebar Toggle
-            const sidebar = document.querySelector('.sidebar');
-            const toggleBtn = document.querySelector('.toggle-btn');
-            const mainContainer = document.querySelector('.main-container');
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+            } else {
+                mainContainer.style.marginLeft = '80px'; /* Default margin */
+            }
+        });
 
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                if (sidebar.classList.contains('active')) {
-                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-                } else {
-                    mainContainer.style.marginLeft = '80px'; /* Default margin */
-                }
-            });
-
-
+        // Populate Update Form with Existing Data
         function populateForm(firstName, lastName, checkIn, checkOut, status, attendanceId) {
-            // Set form fields
             document.getElementById('employee_name').value = firstName + " " + lastName;
             document.getElementById('check_in').value = checkIn;
             document.getElementById('check_out').value = checkOut;
             document.getElementById('status').value = status;
             document.getElementById('attendance_id').value = attendanceId;
-            
-            // Show the form
             document.getElementById('updateForm').style.display = 'block';
+        }
+
+        // Search Filter for Attendance Table
+        function filterTable() {
+            let input = document.getElementById('searchInput');
+            let filter = input.value.toLowerCase();
+            let table = document.getElementById('attendanceTable');
+            let tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) { // Skip header row
+                let td = tr[i].getElementsByTagName('td')[2]; // Employee Name column index
+                if (td) {
+                    let txtValue = td.textContent || td.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = '';
+                    } else {
+                        tr[i].style.display = 'none';
+                    }
+                }       
+            }
         }
     </script>
 

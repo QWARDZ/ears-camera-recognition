@@ -293,7 +293,6 @@ input[type="text"], select {
 </head>
 <body>
 
-
     {% include 'layout/admin_nav.html' %}
 
     <div class="main-container">
@@ -315,43 +314,46 @@ input[type="text"], select {
                         <th>Shift Time</th>
                         <th>Actions</th>
                     </tr>
-                    
-                    <tbody>
-                        {% for user in users %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>
-                                {% if user[7] %}
-                                    <img src="{{ url_for('static', filename='uploads/' ~ user[7]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
-                                {% else %}
-                                    <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
-                                {% endif %}
-                            </td>
-                            <td>{{ user[1] }}</td>
-                            <td>{{ user[2] }}</td>
-                            <td>{{ user[4] }}</td>
-                            <td>{{ user[3] }}</td>
-                            
-                            <!-- Only show Shift Time if the role is 'employee' -->
-                            <td class="shift-time">
-                                {% if user[3] == 'employee' %}
-                                    {{ user[5] }} - {{ user[6] }}
-                                {% else %}
-                                    ---
-                                {% endif %}
-                            </td>
-                            
-                            <td>
-                                <button class="btn btn-primary" onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}')">Edit</button>
-                                <form method="POST" action="/admin/user/delete/{{ user[0] }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    
-
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            {% if user[7] %}
+                                <img src="{{ url_for('static', filename='uploads/' ~ user[7]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
+                            {% endif %}
+                        </td>
+                        <td>{{ user[1] }}</td>
+                        <td>{{ user[2] }}</td>
+                        <td>{{ user[4] }}</td>
+                        <td>{{ user[3] }}</td>
+                
+                        <!-- Show Shift Time only for employees -->
+                        <td class="shift-time" 
+                            {% if user[3] == 'employee' %}
+                                data-start-time="{{ user[5] }}" data-end-time="{{ user[6] }}"
+                            {% endif %}>
+                            {% if user[3] == 'employee' %}
+                                {{ user[5] }} - {{ user[6] }}
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            <button class="btn btn-primary" 
+                            onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[2] }}', '{{ user[4] }}', '{{ user[3] }}', '{{ user[7] }}', '{{ user[5] }}', '{{ user[6] }}')">Edit</button>                        
+                            <form method="POST" action="/admin/user/delete/{{ user[0] }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                
             </table>
         </div>
     </div>
@@ -431,19 +433,19 @@ input[type="text"], select {
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
 
-                                    // Sidebar Toggle
-                                    const sidebar = document.querySelector('.sidebar');
-            const toggleBtn = document.querySelector('.toggle-btn');
-            const mainContainer = document.querySelector('.main-container');
+                // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const mainContainer = document.querySelector('.main-container');
 
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                if (sidebar.classList.contains('active')) {
-                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-                } else {
-                    mainContainer.style.marginLeft = '80px'; /* Default margin */
-                }
-            });
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+            } else {
+                mainContainer.style.marginLeft = '80px'; /* Default margin */
+            }
+        });
 
 
         $(document).ready(function() {
@@ -545,14 +547,18 @@ function formatTime(time) {
 document.addEventListener('DOMContentLoaded', function () {
     const timeCells = document.querySelectorAll('.shift-time');
     timeCells.forEach(cell => {
-        if (cell.textContent.includes('-')) {
-            let [startTime, endTime] = cell.textContent.split(' - ');
+        // Check if start and end time data attributes are present
+        let startTime = cell.getAttribute('data-start-time');
+        let endTime = cell.getAttribute('data-end-time');
+
+        // If both start and end time are available, format them
+        if (startTime && endTime) {
             startTime = startTime.trim();  // Ensure there's no extra space
             endTime = endTime.trim();  // Ensure there's no extra space
             cell.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
         } else {
-            // For single time values, apply formatTime directly
-            cell.textContent = formatTime(cell.textContent);
+            // For admin or if shift times are not available, show default value
+            cell.textContent = "---";
         }
     });
 });

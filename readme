@@ -125,7 +125,7 @@ class EmployeeAttendance:
                         IFNULL(DATE_FORMAT(a.check_out, '%h:%i %p'), 'Not Checked Out') as check_out
                     FROM attendance a
                     LEFT JOIN employees e ON a.employee_id = e.id
-                    WHERE TIMESTAMPDIFF(MINUTE, a.check_in, NOW()) <= 5
+                    WHERE TIMESTAMPDIFF(MINUTE, a.check_in, NOW()) <= 1
                     ORDER BY a.date DESC, a.check_in DESC
                     LIMIT 5
                 """)
@@ -570,6 +570,9 @@ class EmployeeAttendance:
 
 
 
+
+
+
         # Route to update attendance record
         @self.app.route('/admin/attendance/update', methods=['POST'])
         def update_attendance():
@@ -620,6 +623,8 @@ class EmployeeAttendance:
             
 
 
+
+
 #---------------------------------------------------------------------------
 
 
@@ -635,6 +640,7 @@ class EmployeeAttendance:
                     WHERE id = (SELECT employee_id FROM users WHERE username = %s)
                 """, [session['username']])
                 user_data = cur.fetchone()
+                #-----------------------------------------------
 
                 # Get the employee ID from the users table using the logged-in username
                 cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
@@ -657,98 +663,84 @@ class EmployeeAttendance:
                 shift_start = shift[0]
                 shift_end = shift[1]
 
-                # Check if the employee has any attendance record for today
+                # Check if the employee has an active check-in without a check-out
                 cur.execute("""
-                    SELECT check_in, check_out, DATE(date) 
+                    SELECT id, check_in, check_out 
                     FROM attendance 
-                    WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
+                    WHERE employee_id = %s AND check_out IS NULL 
+                    ORDER BY id DESC LIMIT 1
+                """, [employee_id])
                 attendance_record = cur.fetchone()
 
                 already_checked_in = False
-                already_checked_out = False
 
-                if attendance_record:
-                    check_in_time, check_out_time, record_date = attendance_record
-                    if check_in_time and not check_out_time:
-                        already_checked_in = True
-                    elif check_in_time and check_out_time:
-                        already_checked_out = True
+                if attendance_record and attendance_record[2] is None:
+                    already_checked_in = True
 
                 if request.method == 'POST':
                     action = request.form['action']
 
-                    if action == 'time_in':
-                        if already_checked_out:
-                            # Show message to the employee if they've already checked out today
-                            flash("Today, only one time in and time out allowed. See you tomorrow.", "warning")
-                            return redirect('/employee/attendance')
-                        elif already_checked_in:
-                            # If they've already checked in but not checked out, show the check-out option
-                            flash("You are already checked in. Please check out when you finish.", "info")
+                    if action == 'time_in' and not already_checked_in:
+                        # Insert new check-in record
+                        cur.execute("""
+                            INSERT INTO attendance (employee_id, check_in, date) 
+                            VALUES (%s, NOW(), NOW())""", [employee_id])
+                        self.mysql.connection.commit()
+
+                        # Calculate the status (Late/On Time)
+                        cur.execute("SELECT TIME(check_in) FROM attendance WHERE employee_id = %s ORDER BY id DESC LIMIT 1", [employee_id])
+                        check_in_time = cur.fetchone()[0]
+
+                        if check_in_time > shift_start:
+                            status = "Late"
+                        elif check_in_time == shift_start:
+                            status = "On Time"
                         else:
-                            # Insert new check-in record if no check-in exists for today
-                            cur.execute("""
-                                INSERT INTO attendance (employee_id, check_in, date) 
-                                VALUES (%s, NOW(), NOW())""", [employee_id])
-                            self.mysql.connection.commit()
+                            status = "Early"
 
-                            # Calculate the status (Late/On Time)
-                            cur.execute("SELECT TIME(check_in) FROM attendance WHERE employee_id = %s AND DATE(date) = CURDATE()", [employee_id])
-                            check_in_time = cur.fetchone()[0]
+                        # Update the status in the attendance table
+                        cur.execute("""
+                            UPDATE attendance 
+                            SET status = %s 
+                            WHERE employee_id = %s AND check_out IS NULL""", (status, employee_id))
+                        self.mysql.connection.commit()
 
-                            if check_in_time > shift_start:
-                                status = "Late"
-                            else:
-                                status = "Early"
+                        flash(f"Checked in successfully. Status: {status}", "success")
+                        return redirect('/employee/attendance')
 
-                            # Update the status in the attendance table
-                            cur.execute("""
-                                UPDATE attendance 
-                                SET status = %s 
-                                WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
-                            self.mysql.connection.commit()
+                    elif action == 'time_out' and already_checked_in:
+                        # Update the check-out time
+                        cur.execute("""
+                            UPDATE attendance 
+                            SET check_out = NOW() 
+                            WHERE employee_id = %s AND check_out IS NULL
+                            ORDER BY id DESC LIMIT 1""", [employee_id])
+                        self.mysql.connection.commit()
 
-                            flash(f"Checked in successfully. Status: {status}", "success")
-                            return redirect('/employee/attendance')
+                        # Calculate Overtime
+                        cur.execute("SELECT TIME(check_out) FROM attendance WHERE employee_id = %s ORDER BY id DESC LIMIT 1", [employee_id])
+                        check_out_time = cur.fetchone()[0]
 
-                    elif action == 'time_out':
-                        if not already_checked_in:
-                            flash("You haven't checked in yet!", "danger")
-                            return redirect('/employee/attendance')
+                        if check_out_time > shift_end:
+                            status = "Overtime"
                         else:
-                            # Update the check-out time
-                            cur.execute("""
-                                UPDATE attendance 
-                                SET check_out = NOW() 
-                                WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
-                            self.mysql.connection.commit()
+                            status = "On Time"
 
-                            # Calculate Overtime
-                            cur.execute("SELECT TIME(check_out) FROM attendance WHERE employee_id = %s AND DATE(date) = CURDATE()", [employee_id])
-                            check_out_time = cur.fetchone()[0]
+                        # Update the status
+                        cur.execute("""
+                            UPDATE attendance 
+                            SET status = %s 
+                            WHERE employee_id = %s AND check_out IS NULL""", (status, employee_id))
+                        self.mysql.connection.commit()
 
-                            if check_out_time > shift_end:
-                                status = "Overtime"
-                            else:
-                                status = "On Time"
-
-                            # Update the status
-                            cur.execute("""
-                                UPDATE attendance 
-                                SET status = %s 
-                                WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
-                            self.mysql.connection.commit()
-
-                            flash(f"Checked out successfully. Status: {status}", "success")
-                            return redirect('/employee/attendance')
+                        flash(f"Checked out successfully. Status: {status}", "success")
+                        return redirect('/employee/attendance')
 
                 cur.close()
-                return render_template('employee/attendance.html', already_checked_in=already_checked_in, already_checked_out=already_checked_out, user_data=user_data)
+                return render_template('employee/attendance.html', already_checked_in=already_checked_in, user_data=user_data)
 
             else:
                 return redirect('/login')
-
-
 
 
 
@@ -887,7 +879,8 @@ class EmployeeAttendance:
                     WHERE id = (SELECT employee_id FROM users WHERE username = %s)
                 """, [session['username']])
                 user_data = cur.fetchone()
-                
+                #-----------------------------------------------
+
                 # Get the employee ID from the users table using the logged-in username
                 cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
                 result = cur.fetchone()
@@ -902,11 +895,11 @@ class EmployeeAttendance:
                 cur.execute("""
                     SELECT 
                         a.date, 
-                        DATE_FORMAT(a.check_in, '%%I:%%i %%p') AS check_in, 
-                        DATE_FORMAT(a.check_out, '%%I:%%i %%p') AS check_out, 
+                        DATE_FORMAT(a.check_in, '%%h:%%i %%p') AS check_in, 
+                        DATE_FORMAT(a.check_out, '%%h:%%i %%p') AS check_out, 
                         e.profile_picture, 
                         CONCAT(e.first_name, ' ', e.last_name) AS full_name, 
-                        CONCAT(DATE_FORMAT(s.start_time, '%%I:%%i %%p'), ' - ', DATE_FORMAT(s.end_time, '%%I:%%i %%p')) AS shift_time, 
+                        CONCAT(s.start_time, ' - ', s.end_time) AS shift_time, 
                         a.status
                     FROM attendance a
                     LEFT JOIN employees e ON a.employee_id = e.id

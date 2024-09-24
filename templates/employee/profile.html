@@ -16,7 +16,7 @@ body {
 .main-container {
     max-width: 2000px;
     padding: 20px;
-    background-color: #e2e2e2;
+    background-color: #ffffff;
     /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
     border-radius: 10px;
     display: flex;
@@ -53,10 +53,8 @@ body {
 
 .profile-info {
     width: 30%;
-    background-color: #f8f9fa;
+    background-color: #d1d1d1;
     padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -91,10 +89,8 @@ body {
 
 .upload-form {
     width: 30%;
-    margin-top: 20px;
-    background-color: #f8f9fa;
+    background-color: #d1d1d1;
     padding: 15px;
-    border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
@@ -261,7 +257,7 @@ body {
             toggleBtn.addEventListener('click', () => {
                 sidebar.classList.toggle('active');
                 if (sidebar.classList.contains('active')) {
-                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+                    mainContainer.style.marginLeft = '0px'; /* Adjust margin when sidebar expands */
                 } else {
                     mainContainer.style.marginLeft = '0px'; /* Default margin */
                 }
