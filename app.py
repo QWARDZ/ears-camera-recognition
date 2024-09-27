@@ -2,63 +2,61 @@ from flask import Flask, render_template, request, redirect, session, flash, url
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 import random
-import string
-import datetime
+# import string
+# import datetime
 import os
-
-
 
 class EmployeeAttendance:
     def __init__(self, name):
         self.app = Flask(name)
         self.app.secret_key = 'your_secret_key'
-        
+
         # Connection to Database
         self.app.config['MYSQL_HOST'] = "localhost"
         self.app.config['MYSQL_USER'] = "root"
         self.app.config['MYSQL_PASSWORD'] = ""
         self.app.config['MYSQL_DB'] = "ears_db"
         self.mysql = MySQL(self.app)
-        
-        
+
+
         # Configure Upload folder
         self.app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
         # Setup routes
         self.setup_routes()
-        
+
 
     def setup_routes(self):
         @self.app.route('/')
         def home():
             # Render the home.html when visiting the root route
             return render_template('home.html')
-        
+
 
         @self.app.route('/login', methods=['GET', 'POST'])
         def login():
             if request.method == 'POST':
                 username = request.form['username']
                 password = request.form['password']
-                
+
                 # Query to check the user's credentials and role
                 cur = self.mysql.connection.cursor()
                 cur.execute("SELECT role FROM users WHERE username=%s AND password=%s", (username, password))
                 user = cur.fetchone()
                 cur.close()
-                
+
                 if user:
                     session['username'] = username
                     session['role'] = user[0]
 
-                    
+
                     if user[0] == 'admin':
                         return redirect('/admin/dashboard')
                     elif user[0] == 'employee':
                         return redirect('/employee/attendance')
                 else:
                     return render_template('login.html', error="Invalid credentials. Please try again.")
-            
+
             return render_template('login.html')
 
         @self.app.route('/logout')
@@ -66,8 +64,8 @@ class EmployeeAttendance:
             session.pop('username', None)
             session.pop('role', None)
             return redirect('/')
-        
-        
+
+
 #------------------------------------------------------------------------------------
 
         # Admin Dashboard Route
@@ -75,7 +73,7 @@ class EmployeeAttendance:
         def admin_dashboard():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
+
                 # Fetch user details for the top bar based on logged-in admin
                 cur.execute("""
                     SELECT e.first_name, e.last_name, e.profile_picture
@@ -120,8 +118,8 @@ class EmployeeAttendance:
 
                 # Fetch recent attendees who have checked in within the last 20 minutes
                 cur.execute("""
-                    SELECT e.first_name, e.last_name, e.profile_picture, 
-                        IFNULL(DATE_FORMAT(a.check_in, '%h:%i %p'), 'Not Checked In') as check_in, 
+                    SELECT e.first_name, e.last_name, e.profile_picture,
+                        IFNULL(DATE_FORMAT(a.check_in, '%h:%i %p'), 'Not Checked In') as check_in,
                         IFNULL(DATE_FORMAT(a.check_out, '%h:%i %p'), 'Not Checked Out') as check_out
                     FROM attendance a
                     LEFT JOIN employees e ON a.employee_id = e.id
@@ -151,16 +149,16 @@ class EmployeeAttendance:
 
 
 
-            
+
 #----------------------------------------------------------
-            
+
 
         # Department Management Routes
         @self.app.route('/admin/departments', methods=['GET', 'POST'])
         def manage_departments():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
+
                 # Fetch user data for top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
@@ -168,18 +166,18 @@ class EmployeeAttendance:
                     WHERE id = (SELECT employee_id FROM users WHERE username = %s)
                 """, [session['username']])
                 user_data = cur.fetchone()
-                
+
                 # Provide default user_data if not found
                 if not user_data:
                     user_data = ('Unknown', 'User', 'default_profile.png')
 
                 if request.method == 'POST':
-                    department_id = request.form.get('department_id') 
+                    department_id = request.form.get('department_id')
                     department_name = request.form['department_name']
 
-                    if department_id:  
+                    if department_id:
                         cur.execute("UPDATE departments SET name = %s WHERE id = %s", (department_name, department_id))
-                    else:  
+                    else:
                         # Generate a department ID based on initials
                         department_id = ''.join([word[0].upper() for word in department_name.split()])
 
@@ -213,9 +211,9 @@ class EmployeeAttendance:
             else:
                 return redirect('/login')
 
-            
-            
-#-------------------------------------------------------     
+
+
+#-------------------------------------------------------
 
         # Set up allowed extensions for the upload
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -279,7 +277,7 @@ class EmployeeAttendance:
                         # Automatically create a user for the new employee
                         username = request.form['username']
                         password = request.form['password']
-                        cur.execute("INSERT INTO users (username, password, role, employee_id) VALUES (%s, %s, 'employee', %s)", 
+                        cur.execute("INSERT INTO users (username, password, role, employee_id) VALUES (%s, %s, 'employee', %s)",
                                     (username, password, new_employee_id))
 
                     self.mysql.connection.commit()
@@ -337,7 +335,7 @@ class EmployeeAttendance:
                 flash("Unauthorized action", "danger")
                 return redirect('/login')
 
-            
+
 
 
 #----------------------------------------------------------------------------------
@@ -369,24 +367,24 @@ class EmployeeAttendance:
                     if user_id:
                         # Update employee and user details
                         cur.execute("""
-                            UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s 
+                            UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s
                             WHERE id=%s
                         """, (first_name, last_name, department, shift, gender, user_id))
                         cur.execute("""
-                            UPDATE users SET username=%s, password=%s, role=%s 
+                            UPDATE users SET username=%s, password=%s, role=%s
                             WHERE id=%s
                         """, (username, password, role, user_id))
                     else:
                         # Insert new employee and user
                         cur.execute("""
-                            INSERT INTO employees (first_name, last_name, department, shift, gender) 
+                            INSERT INTO employees (first_name, last_name, department, shift, gender)
                             VALUES (%s, %s, %s, %s, %s)
                         """, (first_name, last_name, department, shift, gender))
                         cur.execute("SELECT LAST_INSERT_ID()")
                         new_employee_id = cur.fetchone()[0]
 
                         cur.execute("""
-                            INSERT INTO users (username, password, role, employee_id) 
+                            INSERT INTO users (username, password, role, employee_id)
                             VALUES (%s, %s, %s, %s)
                         """, (username, password, role, new_employee_id))
 
@@ -394,13 +392,13 @@ class EmployeeAttendance:
                     return redirect('/admin/user')
 
                 cur.execute("""
-                    SELECT u.id, 
-                        CONCAT(COALESCE(e.first_name, 'None'), ' ', COALESCE(e.last_name, '')) AS full_name, 
-                        u.username, 
-                        u.role, 
-                        u.password, 
-                        CASE WHEN u.role = 'employee' THEN COALESCE(s.start_time, '---') ELSE '---' END AS start_time, 
-                        CASE WHEN u.role = 'employee' THEN COALESCE(s.end_time, '---') ELSE '---' END AS end_time, 
+                    SELECT u.id,
+                        CONCAT(COALESCE(e.first_name, 'None'), ' ', COALESCE(e.last_name, '')) AS full_name,
+                        u.username,
+                        u.role,
+                        u.password,
+                        CASE WHEN u.role = 'employee' THEN COALESCE(s.start_time, '---') ELSE '---' END AS start_time,
+                        CASE WHEN u.role = 'employee' THEN COALESCE(s.end_time, '---') ELSE '---' END AS end_time,
                         e.profile_picture
                     FROM users u
                     LEFT JOIN employees e ON u.employee_id = e.id
@@ -432,23 +430,23 @@ class EmployeeAttendance:
                     # Retrieve the employee_id associated with this user
                     cur.execute("SELECT employee_id FROM users WHERE id = %s", [user_id])
                     employee_id_result = cur.fetchone()
-                    
+
                     # Check if an employee_id exists
                     if employee_id_result:
                         employee_id = employee_id_result[0]
-                        
+
                         # Delete associated attendance records
                         cur.execute("DELETE FROM attendance WHERE employee_id = %s", [employee_id])
-                        
+
                         # Delete employee record
                         cur.execute("DELETE FROM employees WHERE id = %s", [employee_id])
-                    
+
                     # Delete user record
                     cur.execute("DELETE FROM users WHERE id = %s", [user_id])
-                    
+
                     # Commit all changes
                     self.mysql.connection.commit()
-                    
+
                     flash("User and associated records deleted successfully", "success")
                 except Exception as e:
                     flash(f"Error deleting user: {e}", "danger")
@@ -460,16 +458,16 @@ class EmployeeAttendance:
                 return redirect('/login')
 
 
-        
-        
+
+
 #----------------------------------------------------------------------
         # Shift Management Routes
         @self.app.route('/admin/shifts', methods=['GET', 'POST'])
         def manage_shifts():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
-                
+
+
                 # Fetch user data for top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
@@ -515,8 +513,8 @@ class EmployeeAttendance:
             else:
                 flash("Unauthorized action", "danger")
                 return redirect('/login')
-            
-            
+
+
 #---------------------------------------------------------------------------
 # Route to view all attendance records (filtered by department and date range)
 
@@ -525,7 +523,7 @@ class EmployeeAttendance:
         def attendance_report():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
+
                 # Fetch user data for top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
@@ -543,9 +541,9 @@ class EmployeeAttendance:
 
                 # Define the query and parameters
                 query = """
-                    SELECT e.first_name, e.last_name, e.profile_picture, d.name, 
-                        DATE_FORMAT(a.check_in, '%%h:%%i %%p') as check_in, 
-                        DATE_FORMAT(a.check_out, '%%h:%%i %%p') as check_out, 
+                    SELECT e.first_name, e.last_name, e.profile_picture, d.name,
+                        DATE_FORMAT(a.check_in, '%%h:%%i %%p') as check_in,
+                        DATE_FORMAT(a.check_out, '%%h:%%i %%p') as check_out,
                         a.status, a.id, a.date
                     FROM attendance a
                     LEFT JOIN employees e ON a.employee_id = e.id
@@ -556,7 +554,7 @@ class EmployeeAttendance:
                 if department and department != 'all':
                     query += " WHERE d.id = %s"
                     params.append(department)
-                
+
                 cur.execute(query, params)
 
                 attendance_records = cur.fetchall()
@@ -616,8 +614,8 @@ class EmployeeAttendance:
                 return redirect('/admin/attendance')
             else:
                 return redirect('/login')
-            
-            
+
+
 
 
 #---------------------------------------------------------------------------
@@ -627,7 +625,7 @@ class EmployeeAttendance:
         def employee_attendance():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
-                
+
                 # Fetch user data for top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
@@ -648,9 +646,9 @@ class EmployeeAttendance:
 
                 # Fetch employee's assigned shift times
                 cur.execute("""
-                    SELECT s.start_time, s.end_time 
-                    FROM employees e 
-                    JOIN shifts s ON e.shift = s.id 
+                    SELECT s.start_time, s.end_time
+                    FROM employees e
+                    JOIN shifts s ON e.shift = s.id
                     WHERE e.id = %s
                 """, [employee_id])
                 shift = cur.fetchone()
@@ -659,8 +657,8 @@ class EmployeeAttendance:
 
                 # Check if the employee has any attendance record for today
                 cur.execute("""
-                    SELECT check_in, check_out, DATE(date) 
-                    FROM attendance 
+                    SELECT check_in, check_out, DATE(date)
+                    FROM attendance
                     WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
                 attendance_record = cur.fetchone()
 
@@ -688,7 +686,7 @@ class EmployeeAttendance:
                         else:
                             # Insert new check-in record if no check-in exists for today
                             cur.execute("""
-                                INSERT INTO attendance (employee_id, check_in, date) 
+                                INSERT INTO attendance (employee_id, check_in, date)
                                 VALUES (%s, NOW(), NOW())""", [employee_id])
                             self.mysql.connection.commit()
 
@@ -703,8 +701,8 @@ class EmployeeAttendance:
 
                             # Update the status in the attendance table
                             cur.execute("""
-                                UPDATE attendance 
-                                SET status = %s 
+                                UPDATE attendance
+                                SET status = %s
                                 WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
                             self.mysql.connection.commit()
 
@@ -718,8 +716,8 @@ class EmployeeAttendance:
                         else:
                             # Update the check-out time
                             cur.execute("""
-                                UPDATE attendance 
-                                SET check_out = NOW() 
+                                UPDATE attendance
+                                SET check_out = NOW()
                                 WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
                             self.mysql.connection.commit()
 
@@ -734,8 +732,8 @@ class EmployeeAttendance:
 
                             # Update the status
                             cur.execute("""
-                                UPDATE attendance 
-                                SET status = %s 
+                                UPDATE attendance
+                                SET status = %s
                                 WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
                             self.mysql.connection.commit()
 
@@ -760,7 +758,7 @@ class EmployeeAttendance:
         def employee_profile():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
-                
+
                 # Fetch user data for top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
@@ -782,8 +780,8 @@ class EmployeeAttendance:
 
                 # Fetch employee details from the database, including shift times
                 cur.execute("""
-                    SELECT e.id, e.first_name, e.last_name, e.gender, d.name as department, 
-                        CONCAT(TIME_FORMAT(s.start_time, '%%h:%%i %%p'), ' - ', TIME_FORMAT(s.end_time, '%%h:%%i %%p')) as shift_time, 
+                    SELECT e.id, e.first_name, e.last_name, e.gender, d.name as department,
+                        CONCAT(TIME_FORMAT(s.start_time, '%%h:%%i %%p'), ' - ', TIME_FORMAT(s.end_time, '%%h:%%i %%p')) as shift_time,
                         e.profile_picture
                     FROM employees e
                     LEFT JOIN shifts s ON e.shift = s.id
@@ -817,7 +815,7 @@ class EmployeeAttendance:
 
 
 
-    
+
             # Route for uploading profile picture
         @self.app.route('/employee/profile/upload', methods=['POST'])
         def upload_profile_picture():
@@ -879,7 +877,7 @@ class EmployeeAttendance:
         def employee_history():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
-                
+
                 # Fetch user data for top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
@@ -887,7 +885,7 @@ class EmployeeAttendance:
                     WHERE id = (SELECT employee_id FROM users WHERE username = %s)
                 """, [session['username']])
                 user_data = cur.fetchone()
-                
+
                 # Get the employee ID from the users table using the logged-in username
                 cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
                 result = cur.fetchone()
@@ -900,13 +898,13 @@ class EmployeeAttendance:
 
                 # Fetch attendance history for the employee with formatted check-in and check-out times
                 cur.execute("""
-                    SELECT 
-                        a.date, 
-                        DATE_FORMAT(a.check_in, '%%I:%%i %%p') AS check_in, 
-                        DATE_FORMAT(a.check_out, '%%I:%%i %%p') AS check_out, 
-                        e.profile_picture, 
-                        CONCAT(e.first_name, ' ', e.last_name) AS full_name, 
-                        CONCAT(DATE_FORMAT(s.start_time, '%%I:%%i %%p'), ' - ', DATE_FORMAT(s.end_time, '%%I:%%i %%p')) AS shift_time, 
+                    SELECT
+                        a.date,
+                        DATE_FORMAT(a.check_in, '%%I:%%i %%p') AS check_in,
+                        DATE_FORMAT(a.check_out, '%%I:%%i %%p') AS check_out,
+                        e.profile_picture,
+                        CONCAT(e.first_name, ' ', e.last_name) AS full_name,
+                        CONCAT(DATE_FORMAT(s.start_time, '%%I:%%i %%p'), ' - ', DATE_FORMAT(s.end_time, '%%I:%%i %%p')) AS shift_time,
                         a.status
                     FROM attendance a
                     LEFT JOIN employees e ON a.employee_id = e.id
@@ -927,9 +925,9 @@ class EmployeeAttendance:
 
 
 
-            
-            
-            
+
+
+
 
     def run(self):
         self.app.run(debug=True, port=3000)
