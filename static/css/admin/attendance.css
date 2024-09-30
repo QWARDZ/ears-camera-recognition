@@ -1,0 +1,166 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.main-container {
+    margin-left: 75px;
+    margin-top: 0px;
+    background-color: #dbdada;
+    padding: 25px;
+    transition: margin-left 0.5s ease; /* Smooth sliding effect */
+}
+
+h1 {
+    margin-bottom: 30px;
+    font-size: 26px;
+    color: #333;
+}
+
+.filter-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.filter-form input, .filter-form select {
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.filter-form button {
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.filter-form button:hover {
+    background-color: #0056b3;
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.attendance-table th, .attendance-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.attendance-table th {
+    background-color: #343a40;
+    color: white;
+    font-size: 16px;
+}
+
+.attendance-table td {
+    background-color: #f9f9f9;
+    font-size: 14px;
+    color: #333;
+}
+
+.attendance-table td button {
+    padding: 6px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 0 2px; /* Minimal space between buttons */
+    width: auto; /* Let the buttons size according to content */
+    display: inline-block;
+    text-align: center;
+}
+
+.attendance-table td button:hover {
+    background-color: #218838;
+}
+
+.attendance-table td form button {
+    background-color: #dc3545;
+}
+
+.attendance-table td form button:hover {
+    background-color: #c82333;
+}
+
+.container-update {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.container-update h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 22px;
+    color: #333;
+}
+
+.container-update label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+    color: #555;
+}
+
+.container-update input, .container-update select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.container-update button {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.container-update button:hover {
+    background-color: #218838;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    .filter-form {
+        flex-direction: column;
+    }
+
+    .filter-form input, .filter-form select, .filter-form button {
+        width: 100%;
+    }
+
+    .attendance-table th, .attendance-table td {
+        font-size: 14px;
+        padding: 10px;
+    }
+}

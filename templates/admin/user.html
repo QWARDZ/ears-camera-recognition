@@ -5,291 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Users</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-    <style>
-/* Global styles */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
-}
-
-/* Main container for the content */
-.main-container {
-    max-width: 1905px;
-    margin-left: 75px;
-    padding: 20px;
-    background-color: #dbdada;
-    transition: margin-left 0.5s ease; /* Smooth sliding effect */
-}
-
-/* Header section for title and button */
-.header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap; /* Ensure proper alignment on smaller screens */
-}
-
-.header-section h1 {
-    font-size: 24px;
-    color: #343a40;
-    margin-bottom: 10px; /* Add space below title */
-}
-
-.btn-primary {
-    background-color: #26c726;
-    color: #ffffff;
-    border: none;
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-}
-
-/* Table styles */
-.table-container {
-    margin-top: 20px;
-    width: 100%;
-    overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
-}
-
-table.dataTable {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    table-layout: auto; /* Allows dynamic resizing */
-}
-
-th, td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-}
-
-/* Specific Column Width Adjustments */
-th.col-small, td.col-small {
-    width: 50px; /* Width for # and ID */
-}
-
-th.col-wide, td.col-wide {
-    width: 40%; /* Wider width for Full Name */
-}
-
-th.col-medium, td.col-medium {
-    width: 20%; /* Medium width for Actions */
-}
-
-th {
-    background-color: #343a40;
-    color: #fff;
-}
-
-td {
-    font-size: 14px;
-    color: #495057;
-}
-
-/* Buttons in table */
-.btn {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 4px;
-    margin-right: 5px;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-primary {
-    background-color: #26c726;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.btn-primary:hover {
-    background-color: #c4d8c8;
-}
-
-.btn-danger:hover {
-    background-color: #c4d8c8;
-}
-
-/* Modal styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: #fff;
-    padding: 20px;
-    width: 100%;
-    max-width: 400px;
-    border-radius: 10px;
-}
-
-/* Reset styling for DataTables "Show entries" dropdown */
-.dataTables_length select {
-    width: auto; /* Original width for dropdown */
-    padding: 3px; /* Original padding */
-    font-size: 10px; /* Restore original font size */
-    border: 1px solid #ced4da; /* Default border */
-    border-radius: 4px; /* Default rounded corners */
-    background-color: #fff; /* Default background color */
-    box-sizing: border-box; /* Ensure proper box-sizing */
-}
-
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-label {
-    font-size: 14px;
-    color: #495057;
-}
-
-input[type="text"], select {
-    width: 100%;
-    padding: 8px;
-    font-size: 14px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-}
-
-.save-btn {
-    background-color: #28a745;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 4px;
-}
-
-.cancel-btn {
-    background-color: #6c757d;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 4px;
-    margin-left: 10px;
-}
-
-/* DataTables adjustments */
-.dataTables_wrapper .dataTables_length, 
-.dataTables_wrapper .dataTables_filter {
-    margin-bottom: 15px;
-}
-
-.dataTables_length label,
-.dataTables_filter label {
-    font-size: 14px;
-}
-
-.dataTables_length select,
-.dataTables_filter input {
-    border: 1px solid #ced4da;
-    padding: 5px;
-    border-radius: 4px;
-}
-
-.dataTables_wrapper .dataTables_length {
-    float: left;
-}
-
-.dataTables_wrapper .dataTables_filter {
-    float: right;
-}
-
-/* Mobile view and smaller screens adjustments */
-@media (max-width: 768px) {
-    /* Remove sidebar margin on smaller screens */
-    .main-container {
-        margin-left: 0;
-        padding: 10px;
-    }
-
-    /* Stack title and button vertically on small screens */
-    .header-section {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;        
-        position: relative;
-    }
-
-    .header-section .btn-primary {
-        align-self: flex-end; /* Align button to the right */
-        margin-top: 5px; /* Add space above the button */
-    }
-
-    /* Table container: Allow scrolling on smaller screens */
-    .table-container {
-        margin-top: 10px;
-        overflow-x: scroll;
-    }
-
-    /* Adjust DataTables controls for small screens */
-    .dataTables_wrapper .dataTables_length,
-    .dataTables_wrapper .dataTables_filter {
-        float: none;
-        text-align: center;
-        margin-bottom: 10px;
-    }
-
-    /* Table layout adjustments for smaller screens */
-    table.dataTable {
-        width: 100%;
-        table-layout: auto; /* Ensure proper table layout */
-    }
-
-    th.col-small, td.col-small {
-        width: 30px; /* Adjust width for smaller screens */
-    }
-
-    th.col-wide, td.col-wide {
-        width: 50%; /* Adjust Full Name width */
-    }
-
-    th.col-medium, td.col-medium {
-        width: 20%; /* Adjust Actions width */
-    }
-
-    /* Smaller buttons on small screens */
-    .btn {
-        font-size: 10px;
-        padding: 5px 8px;
-    }
-}
-
-        /* Additional Styles for Role-Based Form */
-        .form-group.hidden {
-            display: none;
-        }
-
-        .role-selection {
-            margin-bottom: 20px;
-        }
-
-
-
-
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/user.css') }}">
 </head>
 <body>
 
@@ -311,7 +27,6 @@ input[type="text"], select {
                         <th>Username</th>
                         <th>Password</th>
                         <th>Role</th>
-                        <th>Shift Time</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -331,17 +46,6 @@ input[type="text"], select {
                         <td>{{ user[4] }}</td>
                         <td>{{ user[3] }}</td>
                 
-                        <!-- Show Shift Time only for employees -->
-                        <td class="shift-time" 
-                            {% if user[3] == 'employee' %}
-                                data-start-time="{{ user[5] }}" data-end-time="{{ user[6] }}"
-                            {% endif %}>
-                            {% if user[3] == 'employee' %}
-                                {{ user[5] }} - {{ user[6] }}
-                            {% else %}
-                                ---
-                            {% endif %}
-                        </td>
                         
                         <td>
                             <button class="btn btn-primary" 
@@ -405,6 +109,7 @@ input[type="text"], select {
                         {% endfor %}
                     </select>
                 </div>
+
                 <div class="form-group" id="shift_field">
                     <label for="shift">Shift</label>
                     <select id="shift" name="shift">
@@ -433,7 +138,7 @@ input[type="text"], select {
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
 
-                // Sidebar Toggle
+        // Sidebar Toggle
         const sidebar = document.querySelector('.sidebar');
         const toggleBtn = document.querySelector('.toggle-btn');
         const mainContainer = document.querySelector('.main-container');
@@ -483,18 +188,19 @@ input[type="text"], select {
             };
 
             window.editUser = function(id, first_name, last_name, username, password, role, gender, department, shift) {
-                userIdInput.value = id;
-                firstNameInput.value = first_name;
-                lastNameInput.value = last_name;
-                departmentInput.value = department || '';
-                shiftInput.value = shift || '';
-                genderInput.value = gender || 'Male';
-                usernameInput.value = username;
-                roleInput.value = role;
-                passwordInput.value = password;
-                toggleFormFields(role);
-                userModal.style.display = "block";
-            };
+            userIdInput.value = id;
+            firstNameInput.value = first_name;
+            lastNameInput.value = last_name;
+            departmentInput.value = department || '';
+            shiftInput.value = shift || '';
+            genderInput.value = gender || 'Male';
+            usernameInput.value = username;
+            roleInput.value = role;
+            passwordInput.value = password;
+            toggleFormFields(role); // This will hide/show fields based on the role
+            userModal.style.display = "block";
+        };
+
 
             window.closeModal = function() {
                 userModal.style.display = "none";
@@ -510,16 +216,17 @@ input[type="text"], select {
 
             // Toggle form fields based on role selection
             function toggleFormFields(role) {
-                if (role === 'admin') {
-                    document.getElementById("gender_field").classList.add('hidden');
-                    document.getElementById("department_field").classList.add('hidden');
-                    document.getElementById("shift_field").classList.add('hidden');
-                } else {
-                    document.getElementById("gender_field").classList.remove('hidden');
-                    document.getElementById("department_field").classList.remove('hidden');
-                    document.getElementById("shift_field").classList.remove('hidden');
-                }
+            if (role === 'admin') {
+                document.getElementById("gender_field").classList.add('hidden');
+                document.getElementById("department_field").classList.add('hidden');
+                document.getElementById("shift_field").classList.add('hidden');
+            } else {
+                document.getElementById("gender_field").classList.remove('hidden');
+                document.getElementById("department_field").classList.remove('hidden');
+                document.getElementById("shift_field").classList.remove('hidden');
             }
+        }
+
         });
 
 
@@ -542,26 +249,6 @@ function formatTime(time) {
 
     return `${hours}:${minutes} ${ampm}`;
 }
-
-// Apply the time formatting function to display 12-hour format with AM/PM in the table
-document.addEventListener('DOMContentLoaded', function () {
-    const timeCells = document.querySelectorAll('.shift-time');
-    timeCells.forEach(cell => {
-        // Check if start and end time data attributes are present
-        let startTime = cell.getAttribute('data-start-time');
-        let endTime = cell.getAttribute('data-end-time');
-
-        // If both start and end time are available, format them
-        if (startTime && endTime) {
-            startTime = startTime.trim();  // Ensure there's no extra space
-            endTime = endTime.trim();  // Ensure there's no extra space
-            cell.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
-        } else {
-            // For admin or if shift times are not available, show default value
-            cell.textContent = "---";
-        }
-    });
-});
 
     </script>
 

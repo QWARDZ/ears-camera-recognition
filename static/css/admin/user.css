@@ -1,4 +1,3 @@
-
 /* Global styles */
 body {
     font-family: 'Arial', sans-serif;
@@ -9,9 +8,11 @@ body {
 
 /* Main container for the content */
 .main-container {
+    max-width: 1905px;
+    margin-left: 75px;
     padding: 20px;
     background-color: #dbdada;
-    margin-left: 250px; /* Sidebar width accounted for */
+    transition: margin-left 0.5s ease; /* Smooth sliding effect */
 }
 
 /* Header section for title and button */
@@ -30,10 +31,10 @@ body {
 }
 
 .btn-primary {
-    background-color: #007bff;
-    color: #e0c2c2;
+    background-color: #26c726;
+    color: #ffffff;
     border: none;
-    padding: 8px 12px;
+    padding: 8px 10px;
     font-size: 14px;
     border-radius: 4px;
     cursor: pointer;
@@ -66,41 +67,40 @@ th, td {
     border-bottom: 1px solid #dee2e6;
 }
 
-/* Specific Column Width Adjustments */
-th.col-small, td.col-small {
-    width: 50px; /* Width for # and ID */
-}
 
-th.col-wide, td.col-wide {
-    width: 40%; /* Wider width for Department Name */
-}
-
-th.col-medium, td.col-medium {
-    width: 20%; /* Medium width for Actions */
+td {
+    font-size: 14px;
+    color: #495057;
+    text-align: center;
+    padding: 10px; /* Control cell padding here */
 }
 
 th {
     background-color: #343a40;
     color: #fff;
+    text-align: center; /* Center align the content in the header */
 }
 
-td {
-    font-size: 14px;
-    color: #495057;
-}
-
-/* Buttons in table */
+/* Reduce the button padding to make them smaller */
 .btn {
-    padding: 6px 10px;
+    padding: 6px 8px; /* Adjusted for smaller buttons */
     font-size: 12px;
     border-radius: 4px;
-    margin-right: 5px;
     border: none;
     cursor: pointer;
+    margin: 0 2px; /* Minimal space between buttons */
+    width: auto; /* Let the buttons size according to content */
+    display: inline-block;
+    text-align: center;
 }
 
+.hidden {
+    display: none;
+}
+
+
 .btn-primary {
-    background-color: #007bff;
+    background-color: #26c726;
     color: #fff;
 }
 
@@ -110,11 +110,11 @@ td {
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
+    background-color: #c4d8c8;
 }
 
 .btn-danger:hover {
-    background-color: #c82333;
+    background-color: #c4d8c8;
 }
 
 /* Modal styles */
@@ -132,12 +132,25 @@ td {
 }
 
 .modal-content {
+    text-align: center;
     background-color: #fff;
     padding: 20px;
     width: 100%;
     max-width: 400px;
     border-radius: 10px;
 }
+
+/* Reset styling for DataTables "Show entries" dropdown */
+.dataTables_length select {
+    width: auto; /* Original width for dropdown */
+    padding: 3px; /* Original padding */
+    font-size: 10px; /* Restore original font size */
+    border: 1px solid #ced4da; /* Default border */
+    border-radius: 4px; /* Default rounded corners */
+    background-color: #fff; /* Default background color */
+    box-sizing: border-box; /* Ensure proper box-sizing */
+}
+
 
 .form-group {
     margin-bottom: 15px;
@@ -148,7 +161,7 @@ label {
     color: #495057;
 }
 
-input[type="text"] {
+input[type="text"], select {
     width: 100%;
     padding: 8px;
     font-size: 14px;
@@ -197,63 +210,5 @@ input[type="text"] {
     float: right;
 }
 
-/* Mobile view and smaller screens adjustments */
-@media (max-width: 768px) {
-    /* Remove sidebar margin on smaller screens */
-    .main-container {
-        margin-left: 0;
-        padding: 10px;
-    }
 
-    /* Stack title and button vertically on small screens */
-    .header-section {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;        
-        position: relative;
-        
-    }
 
-    .header-section .btn-primary {
-        align-self: flex-end; /* Align button to the right */
-        margin-top: 5px; /* Add space above the button */
-    }
-
-    /* Table container: Allow scrolling on smaller screens */
-    .table-container {
-        margin-top: 10px;
-        overflow-x: scroll;
-    }
-
-    /* Adjust DataTables controls for small screens */
-    .dataTables_wrapper .dataTables_length,
-    .dataTables_wrapper .dataTables_filter {
-        float: none;
-        text-align: center;
-        margin-bottom: 10px;
-    }
-
-    /* Table layout adjustments for smaller screens */
-    table.dataTable {
-        width: 100%;
-        table-layout: auto; /* Ensure proper table layout */
-    }
-
-    th.col-small, td.col-small {
-        width: 30px; /* Adjust width for smaller screens */
-    }
-
-    th.col-wide, td.col-wide {
-        width: 50%; /* Adjust Department Name width */
-    }
-
-    th.col-medium, td.col-medium {
-        width: 20%; /* Adjust Actions width */
-    }
-
-    /* Smaller buttons on small screens */
-    .btn {
-        font-size: 10px;
-        padding: 5px 8px;
-    }
-}
