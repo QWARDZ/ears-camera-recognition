@@ -1,9 +1,7 @@
-# Import sang Flask para magamit ang mga functionalities like route handling, templates, and session management
 from flask import Flask, render_template, request, redirect, session, flash, url_for 
-from flask_mysqldb import MySQL # Import sang MySQL module para maka-connect sa MySQL database using Flask
-from werkzeug.utils import secure_filename # Import sang secure_filename halin sa werkzeug para mag-handle sang uploaded files safely
-# import random
-import os # Import os module para ma-handle ang file paths kag operating system functions
+from flask_mysqldb import MySQL 
+from werkzeug.utils import secure_filename 
+import os 
 
 # Define sang EmployeeAttendance class
 class EmployeeAttendance:
@@ -151,14 +149,13 @@ class EmployeeAttendance:
 
 #----------------------------------------------------------
 
-        # Ruta para sa pag-manage sang departments
+        # Route para sa pag-manage sang departments
         @self.app.route('/admin/departments', methods=['GET', 'POST'])
         def manage_departments():
-            # Siguraduhon nga ang user naka-login kag isa ka admin
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
 
-                # Kuaon ang user data para sa admin dashboard top bar
+                # Ginakuwa ang user data para sa admin dashboard top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -170,10 +167,9 @@ class EmployeeAttendance:
                 if not user_data:
                     user_data = ('Unknown', 'User', 'default_profile.png')
                     
-                # Kung ang form ginsubmit gamit ang POST
                 if request.method == 'POST':
-                    department_id = request.form.get('department_id')  # hidden field para sa existing nga department
-                    department_name = request.form['department_name']  # ngalan sang department
+                    department_id = request.form.get('department_id')  
+                    department_name = request.form['department_name'] 
 
                     # I-update ang existing nga department kung may ID nga present
                     if department_id:
@@ -195,10 +191,9 @@ class EmployeeAttendance:
             else:
                 return redirect('/login')
 
-        # Ruta para sa pag-delete sang department
+        # Route para sa pag-delete sang department
         @self.app.route('/admin/departments/delete/<int:department_id>', methods=['POST'])
         def delete_department(department_id):
-            # Siguraduhon nga ang user naka-login kag isa ka admin
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
                 cur.execute("DELETE FROM departments WHERE id = %s", [department_id])
