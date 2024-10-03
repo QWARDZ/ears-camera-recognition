@@ -307,13 +307,45 @@ cursor: pointer;
 
 
 /* Responsive Styles */
-@media (max-width: 768px) {
+@media (max-width: 0px) {
     .sidebar {
         width: 100%;
-        height: auto;
+        height: auto; /* Adjust height for small screens */
+        position: relative; /* Change position for better mobile experience */
     }
 
     .sidebar.active {
-        height: auto;
+        height: auto; /* Remove fixed height when active */
+    }
+
+    .sidebar .logo-menu {
+        justify-content: center; /* Center logo in mobile view */
+    }
+
+    .sidebar .list .list-item {
+        height: 40px; /* Adjust height for smaller screens */
+    }
+
+    .sidebar .list .list-item a {
+        font-size: 12px; /* Reduce font size */
+    }
+
+    .top-bar {
+        padding: 10px 10px; /* Reduce padding */
+    }
+
+    .user-name {
+        font-size: 14px; /* Reduce font size */
+    }
+
+    .user-avatar img {
+        width: 35px; /* Reduce avatar size */
+        height: 35px; /* Reduce avatar size */
+    }
+    
+    /* Adjust modal width for mobile */
+    .modal-content {
+        width: 90%; /* Full width on mobile */
+        margin: 10% auto; /* Center modal */
     }
 }

@@ -186,3 +186,35 @@ input[type="time"] {
 .dataTables_wrapper .dataTables_filter {
     float: right;
 }
+
+/* Tablets (max-width: 768px) */
+@media (max-width: 0px) {
+    .main-container {
+        padding: 5px;
+        width: 100%; /* Full width for mobile */
+    }
+    .table-container {
+        margin-top: 5px;
+        padding: 0;
+        width: 100%; /* Full width on mobile */
+        overflow-x: auto;
+    }
+    
+    th, td {
+        font-size: 10px; /* Even smaller font for compact mobile screens */
+        padding: 6px;
+    }
+    
+    .btn {
+        width: 100%; /* Full-width buttons */
+        padding: 8px;
+        font-size: 13px;
+        margin: 5px 0;
+    }
+    
+    /* Modal adjustments */
+    .modal-content {
+        width: 100%; /* Full width for modal on mobile */
+        padding: 10px;
+    }
+}

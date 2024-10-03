@@ -149,18 +149,34 @@ h1 {
     background-color: #218838;
 }
 
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-    .filter-form {
-        flex-direction: column;
+/* Tablets (max-width: 768px) */
+@media (max-width: 0px) {
+    .main-container {
+        padding: 5px;
+        width: 100%; /* Full width for mobile */
     }
-
-    .filter-form input, .filter-form select, .filter-form button {
-        width: 100%;
+    .table-container {
+        margin-top: 5px;
+        padding: 0;
+        width: 100%; /* Full width on mobile */
+        overflow-x: auto;
     }
-
-    .attendance-table th, .attendance-table td {
-        font-size: 14px;
+    
+    th, td {
+        font-size: 10px; /* Even smaller font for compact mobile screens */
+        padding: 6px;
+    }
+    
+    .btn {
+        width: 100%; /* Full-width buttons */
+        padding: 8px;
+        font-size: 13px;
+        margin: 5px 0;
+    }
+    
+    /* Modal adjustments */
+    .modal-content {
+        width: 100%; /* Full width for modal on mobile */
         padding: 10px;
     }
 }
