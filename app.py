@@ -94,10 +94,16 @@ class EmployeeAttendance:
                 else:
                     user_name = 'Unknown'
                     user_profile_picture = url_for('static', filename='uploads/default_profile.png')
-                    
-                cur.execute("SELECT COUNT(*) FROM employees")
+                
+                # Modify the query to count only employees (excluding admins)
+                cur.execute("""
+                    SELECT COUNT(*) 
+                    FROM employees e
+                    JOIN users u ON e.id = u.employee_id
+                    WHERE u.role = 'employee'
+                """)
                 employee_count = cur.fetchone()[0]
-    
+
                 cur.execute("SELECT COUNT(*) FROM shifts")
                 shift_count = cur.fetchone()[0]
 
@@ -141,6 +147,7 @@ class EmployeeAttendance:
                                     user_data=user_data)
             else:
                 return redirect('/login')
+
 
 #----------------------------------------------------------
 
