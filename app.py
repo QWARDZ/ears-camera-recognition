@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for 
+from flask import Flask, render_template, request, redirect, session, flash, url_for
 from flask_mysqldb import MySQL 
 from werkzeug.utils import secure_filename 
 import os 
@@ -847,7 +847,7 @@ class EmployeeAttendance:
 
     # Function para paandaron ang Flask application
     def run(self):
-        self.app.run(debug=True, port=3000)
+        self.app.run(host='192.168.210.134', debug=True, port=3000)
 
 # Main function para mag-instantiate sang EmployeeAttendance class kag i-run ang Flask app
 if __name__ == "__main__":
