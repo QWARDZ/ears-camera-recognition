@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 23, 2024 at 09:23 PM
+-- Generation Time: Oct 03, 2024 at 06:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -36,6 +36,13 @@ CREATE TABLE `attendance` (
   `status` varchar(50) DEFAULT 'On Time'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `attendance`
+--
+
+INSERT INTO `attendance` (`id`, `employee_id`, `check_in`, `check_out`, `date`, `status`) VALUES
+(84, 77, '22:59:26', '22:59:27', '2024-10-03', 'Overtime');
+
 -- --------------------------------------------------------
 
 --
@@ -43,7 +50,7 @@ CREATE TABLE `attendance` (
 --
 
 CREATE TABLE `departments` (
-  `id` varchar(10) NOT NULL,
+  `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -52,11 +59,10 @@ CREATE TABLE `departments` (
 --
 
 INSERT INTO `departments` (`id`, `name`) VALUES
-('IT', 'Information Technology'),
-('CS', 'Computer Science'),
-('DODM', 'Doctor of Dental Medicine'),
-('BOSIMT', 'Bachelor of Science in Medical Technology'),
-('BOSE', 'Bachelor of Secondary Education');
+(1, 'Information Technology'),
+(2, 'Computer Science'),
+(3, 'Doctor of Dental Medicine'),
+(4, 'Bachelor of Science in Medical Technology');
 
 -- --------------------------------------------------------
 
@@ -80,9 +86,9 @@ CREATE TABLE `employees` (
 --
 
 INSERT INTO `employees` (`id`, `first_name`, `last_name`, `department`, `shift`, `gender`, `date_joined`, `profile_picture`) VALUES
-(65, 'Anni', 'abcede', 'IT', '13', 'Female', '2024-09-21', NULL),
-(66, 'ed', 'ed', NULL, NULL, NULL, '2024-09-23', NULL),
-(68, 'Sofia', 'Neza', 'BOSIMT', '13', 'Female', '2024-09-24', NULL);
+(74, 'John Edward', 'Bearneza', NULL, NULL, NULL, '2024-10-03', NULL),
+(76, 'Sofia', 'Neza', '4', '6', 'Female', '2024-10-03', NULL),
+(77, 'Nicai', 'Neza', '3', '5', 'Female', '2024-10-03', NULL);
 
 -- --------------------------------------------------------
 
@@ -111,8 +117,7 @@ INSERT INTO `shifts` (`id`, `start_time`, `end_time`) VALUES
 (12, '02:00:00', '14:00:00'),
 (13, '03:00:00', '15:00:00'),
 (14, '04:00:00', '16:00:00'),
-(15, '05:00:00', '17:00:00'),
-(16, '06:00:00', '18:00:00');
+(15, '05:00:00', '17:00:00');
 
 -- --------------------------------------------------------
 
@@ -133,9 +138,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `role`, `employee_id`) VALUES
-(60, 'an', 'an', 'employee', 65),
-(61, 'ed', 'ed', 'admin', 66),
-(63, 'sof', 'sof123', 'employee', 68);
+(69, 'john', 'john123', 'admin', 74),
+(71, 'sof', 'sof123', 'employee', 76),
+(72, 'nic', 'nic123', 'employee', 77);
 
 --
 -- Indexes for dumped tables
@@ -147,6 +152,12 @@ INSERT INTO `users` (`id`, `username`, `password`, `role`, `employee_id`) VALUES
 ALTER TABLE `attendance`
   ADD PRIMARY KEY (`id`),
   ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `departments`
+--
+ALTER TABLE `departments`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `employees`
@@ -174,13 +185,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `attendance`
 --
 ALTER TABLE `attendance`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+
+--
+-- AUTO_INCREMENT for table `departments`
+--
+ALTER TABLE `departments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
 -- AUTO_INCREMENT for table `shifts`
@@ -192,7 +209,7 @@ ALTER TABLE `shifts`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- Constraints for dumped tables
