@@ -151,14 +151,14 @@ class EmployeeAttendance:
 
 #----------------------------------------------------------
 
-        # Routes para sa Department Management
+        # Ruta para sa pag-manage sang departments
         @self.app.route('/admin/departments', methods=['GET', 'POST'])
         def manage_departments():
-            # Check naton kon ang user naka-login kag admin siya
+            # Siguraduhon nga ang user naka-login kag isa ka admin
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
-                # Gakuha kita sang user data para sa top bar sang admin dashboard
+
+                # Kuaon ang user data para sa admin dashboard top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -166,46 +166,39 @@ class EmployeeAttendance:
                 """, [session['username']])
                 user_data = cur.fetchone()
 
-                # Kon wala nakuha nga user data, may default values kita
+                # Default nga values kung wala user data nga nakuha
                 if not user_data:
                     user_data = ('Unknown', 'User', 'default_profile.png')
                     
-                # Kon POST request (kung may form submission)
+                # Kung ang form ginsubmit gamit ang POST
                 if request.method == 'POST':
-                    department_id = request.form.get('department_id')
-                    department_name = request.form['department_name']
+                    department_id = request.form.get('department_id')  # hidden field para sa existing nga department
+                    department_name = request.form['department_name']  # ngalan sang department
 
-                    # Kung may department ID, ginaupdate naton ang existing department
+                    # I-update ang existing nga department kung may ID nga present
                     if department_id:
                         cur.execute("UPDATE departments SET name = %s WHERE id = %s", (department_name, department_id))
                     else:
-                        # Generate sang department ID base sa initials sang department name
-                        department_id = ''.join([word[0].upper() for word in department_name.split()])
+                        # I-insert ang bag-o nga department, ang MySQL na maghandle sang auto-increment ID
+                        cur.execute("INSERT INTO departments (name) VALUES (%s)", [department_name])
 
-                        # Gacheck naton kun may ara existing nga department ID
-                        cur.execute("SELECT id FROM departments WHERE id = %s", [department_id])
-                        existing_department = cur.fetchone()
-
-                        # Kung may existing na department, ginabalik naton ang page kag ginasend ang error message
-                        if existing_department:
-                            return render_template('admin/departments.html', error="Department ID already exists", departments=[], user_data=user_data)
-
-                        # Kon wala pa, ginainsert naton ang bagong department
-                        cur.execute("INSERT INTO departments (id, name) VALUES (%s, %s)", (department_id, department_name))
-
+                    # I-commit ang mga changes sa database
                     self.mysql.connection.commit()
                     return redirect('/admin/departments')
 
+                # Kuaon ang mga departments para idisplay sa page
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
                 cur.close()
+                
                 return render_template('admin/departments.html', departments=departments, user_data=user_data)
             else:
                 return redirect('/login')
 
-        # Route para mag-delete sang department
-        @self.app.route('/admin/departments/delete/<string:department_id>', methods=['POST'])
+        # Ruta para sa pag-delete sang department
+        @self.app.route('/admin/departments/delete/<int:department_id>', methods=['POST'])
         def delete_department(department_id):
+            # Siguraduhon nga ang user naka-login kag isa ka admin
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
                 cur.execute("DELETE FROM departments WHERE id = %s", [department_id])
@@ -214,6 +207,7 @@ class EmployeeAttendance:
                 return redirect('/admin/departments')
             else:
                 return redirect('/login')
+
 
 #-------------------------------------------------------
 

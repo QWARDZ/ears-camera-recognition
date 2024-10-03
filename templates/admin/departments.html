@@ -22,7 +22,6 @@
                 <thead>
                     <tr>
                         <th class="col-small">#</th>
-                        <th class="col-small">ID</th>
                         <th class="col-wide">Department Name</th>
                         <th class="col-medium">Actions</th>
                     </tr>
@@ -31,7 +30,6 @@
                     {% for department in departments %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ department[0] }}</td>
                         <td>{{ department[1] }}</td>
                         <td>
                             <button class="btn btn-primary" onclick="editDepartment('{{ department[0] }}', '{{ department[1] }}')">Edit</button>
@@ -46,6 +44,7 @@
         </div>
     </div>
 
+    <!-- Modal for Add/Edit Department -->
     <div id="departmentModal" class="modal">
         <div class="modal-content">
             <h2>Department Master Data</h2>
@@ -87,22 +86,26 @@
             var departmentNameInput = document.getElementById("department_name");
             var departmentIdInput = document.getElementById("department_id");
 
+            // Show add form
             window.showAddDepartmentForm = function() {
                 departmentNameInput.value = '';
                 departmentIdInput.value = ''; 
                 departmentModal.style.display = "block";
             };
 
+            // Show edit form with pre-filled data
             window.editDepartment = function(id, name) {
                 departmentIdInput.value = id;
                 departmentNameInput.value = name;
                 departmentModal.style.display = "block";
             };
 
+            // Close modal
             window.closeModal = function() {
                 departmentModal.style.display = "none";
             };
 
+            // Close modal when clicking outside
             window.onclick = function(event) {
                 if (event.target == departmentModal) {
                     departmentModal.style.display = "none";

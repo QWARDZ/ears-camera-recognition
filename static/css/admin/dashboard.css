@@ -18,7 +18,7 @@ body {
     justify-content: space-around;
     gap: 20px;
     margin-top: 20px;
-    flex-wrap: wrap; /* Wrap cards on smaller screens */
+    flex-wrap: wrap; 
 }
 
 .card {
@@ -91,7 +91,7 @@ body {
     margin: 20px 0;
 }
 
-/* Updated CSS for recent attendees section in rows */
+
 .recent-attendees {
     margin-top: 40px;
     padding: 20px;
@@ -108,7 +108,7 @@ body {
 
 .attendee {
     display: flex;
-    justify-content: center; /* Center content in grid cell */
+    justify-content: center; 
 }
 
 .attendee-card {
@@ -163,7 +163,7 @@ body {
 @media (max-width: 768px) {
     .dashboard-cards {
         flex-direction: column;
-        align-items: center; /* Center cards on small screens */
+        align-items: center; 
     }
 
     .card {
@@ -172,7 +172,7 @@ body {
     }
 
     .attendee-list {
-        grid-template-columns: 1fr; /* Single column on small screens */
+        grid-template-columns: 1fr; 
     }
 }
 
