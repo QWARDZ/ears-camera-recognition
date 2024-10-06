@@ -43,12 +43,42 @@
         {% if already_checked_in %}
             <p class="encouragement-message">Keep up the great work! You're doing amazing.</p>
         {% endif %}
+
+        <!-- Small Clock at the Bottom -->
+        <div id="clock" class="clock-wrapper small-clock">
+            <div class="clock-section">
+                <span id="day" class="time-unit small"></span>
+                <span class="label">Day</span>
+            </div>
+            <div class="colon">:</div>
+            <div class="clock-section">
+                <span id="hours" class="time-unit small"></span>
+                <span class="label">Hours</span>
+            </div>
+            <div class="colon">:</div>
+            <div class="clock-section">
+                <span id="minutes" class="time-unit small"></span>
+                <span class="label">Minutes</span>
+            </div>
+            <div class="colon">:</div>
+            <div class="clock-section">
+                <span id="seconds" class="time-unit small"></span>
+                <span class="label">Seconds</span>
+            </div>
+            <div class="colon">:</div>
+            <div class="clock-section">
+                <span id="ampm" class="time-unit small"></span>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    
+    <!-- JavaScript for Clock in 12-Hour Format with Philippines Time (GMT+8) -->
     <script>
-        // Sidebar Toggle
+
+                // Sidebar Toggle
         const sidebar = document.querySelector('.sidebar');
         const toggleBtn = document.querySelector('.toggle-btn');
         const mainContainer = document.querySelector('.main-container');
@@ -61,6 +91,31 @@
                 mainContainer.style.marginLeft = '570px'; /* Default margin */
             }
         });
+
+
+
+        function updateClock() {
+            const now = new Date();
+            const days = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+            const day = days[now.getDay()];
+
+            let hours = now.getUTCHours() + 8; // Philippines Time (GMT+8)
+            if (hours >= 24) hours -= 24; // Adjust for overflow
+
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; // Convert to 12-hour format
+
+            document.getElementById('day').textContent = day;
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes;
+            document.getElementById('seconds').textContent = seconds;
+            document.getElementById('ampm').textContent = ampm;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call to display clock immediately
     </script>
 
 </body>
