@@ -26,8 +26,6 @@ class EmployeeAttendance:
     def setup_routes(self):
         # Route para sa home page
         @self.app.route('/')
-        def home():
-            return render_template('layout/home.html')
         
         # Route para sa login page
         @self.app.route('/login', methods=['GET', 'POST'])
@@ -847,7 +845,7 @@ class EmployeeAttendance:
 
     # Function para paandaron ang Flask application
     def run(self):
-        self.app.run(debug=True, port=3000) #host='192.168.210.134',
+        self.app.run(debug=True, port=3000) #host='',
 
 # Main function para mag-instantiate sang EmployeeAttendance class kag i-run ang Flask app
 if __name__ == "__main__":
