@@ -31,6 +31,11 @@ body {
     color: #343a40;
     margin-bottom: 10px;
 }
+td {
+    font-size: 14px;
+    color: #495057;
+    padding: 10px;
+}
 
 th {
     background-color: #343a40;
@@ -87,25 +92,9 @@ th, td {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #dee2e6;
+    text-align: center;
 }
 
-th.col-small, td.col-small {
-    width: 5%;
-}
-
-th.col-wide, td.col-wide {
-    width: 20%;
-}
-
-th.col-medium, td.col-medium {
-    width: 15%;
-}
-
-td.col-medium {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
 td .btn {
     margin-right: 5px;

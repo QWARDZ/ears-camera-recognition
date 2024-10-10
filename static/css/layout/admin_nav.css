@@ -305,6 +305,35 @@ text-decoration: none;
 cursor: pointer;
 }
 
+.logo-menu {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    width: 40px;
+    height: auto;
+    margin-right: 10px; 
+}
+
+.logo {
+    font-size: 24px;
+}
+
+.sidebar .logo-img {
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.sidebar.active .logo-img {
+    opacity: 1; 
+}
+
+.sidebar:not(.active) .logo-img {
+    opacity: 0; 
+    transition-delay: 0.1s; 
+}
+
 
 /* Responsive Styles */
 @media (max-width: 0px) {
@@ -349,3 +378,5 @@ cursor: pointer;
         margin: 10% auto; /* Center modal */
     }
 }
+
+

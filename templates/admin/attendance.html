@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/static/images/logo.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/attendance.css') }}">
     <title>Employee Attendance Report</title>
 </head>
@@ -11,7 +12,9 @@
     {% include 'layout/admin_nav.html' %}
 
     <div class="main-container">
-        <h1>Attendance Report</h1>
+        <div class="header-section">
+            <h1>Attendance Report</h1> <!-- Added Manage Employees Heading -->
+        </div>
     
         <!-- Filter Form with Department and Search -->
         <form class="filter-form" method="GET" action="/admin/attendance">

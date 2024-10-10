@@ -16,9 +16,23 @@ body {
 .dashboard-cards {
     display: flex;
     justify-content: space-around;
-    gap: 20px;
+    gap: 10px;
     margin-top: 20px;
     flex-wrap: wrap; 
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.header-section h1 {
+    font-size: 24px;
+    color: #343a40;
+    margin-bottom: 10px;
 }
 
 .card {
