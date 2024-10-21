@@ -6,6 +6,171 @@
     <link rel="icon" type="image/x-icon" href="/static/images/logo.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/attendance.css') }}">
     <title>Employee Attendance Report</title>
+    <style>
+        .hour-calculation {
+            
+            padding: 10px;
+            width: 400px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: none; /* Initially hidden */
+            position: fixed;
+            top: 40px;
+            right: 280px;
+            z-index: 1000;
+        }
+
+        .hour-calculation h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+        }
+
+        .hour-calculation input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .hour-calculation button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .hour-calculation button:hover {
+            background-color: #0056b3;
+        }
+
+        #totalHoursResult {
+            top: 170px;
+            font-size: 18px;
+            color: #28a745;
+            position: fixed;
+            right: 300px;
+
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            margin-left: 75px;
+            margin-top: 0px;
+            background-color: #dbdada;
+            padding: 25px;
+            transition: margin-left 0.5s ease; /* Smooth sliding effect */
+        }
+
+        .header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 26px;
+            color: #333;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-form select, .filter-form input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .calculate-button {
+            display: flex;
+            justify-content: flex-end;
+
+        }
+
+        .calculate-button button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .calculate-button button:hover {
+            background-color: #218838;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .attendance-table th, .attendance-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .attendance-table th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .attendance-table td {
+            background-color: #f9f9f9;
+        }
+
+        .attendance-table td button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .attendance-table td button:hover {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 <body>
 
@@ -13,21 +178,39 @@
 
     <div class="main-container">
         <div class="header-section">
-            <h1>Attendance Report</h1> <!-- Added Manage Employees Heading -->
+            <h1>Attendance Report</h1>
+
+            <!-- Calculate Duty Hours Button at the Top -->
+            <div class="calculate-button">
+                <button onclick="toggleCalculationForm()">Calculate Duty Hours</button>
+            </div>
         </div>
-    
+
+        <!-- Calculate Duty Hours Section -->
+        <div class="hour-calculation" id="hourCalculationForm">
+            <button class="close-btn" onclick="toggleCalculationForm()">&times;</button>
+            <h2>Calculate Duty Hours</h2>
+            <form>
+                <label for="employee_name">Employee Name:</label>
+                <input type="text" id="employee_name" placeholder="Enter Employee Name" required>
+                
+                <button type="button" onclick="calculateHours()">Calculate Hours</button>
+            </form>
+            <div id="totalHoursResult"></div>
+        </div>
+
         <!-- Filter Form with Department and Search -->
         <form class="filter-form" method="GET" action="/admin/attendance">
             <select name="department" onchange="this.form.submit()" required>
                 <option value="">Select Department</option>
-                <option value="all">All Departments</option> <!-- Option to show all departments -->
+                <option value="all">All Departments</option>
                 {% for department in departments %}
                     <option value="{{ department[0] }}">{{ department[1] }}</option>
                 {% endfor %}
             </select>
-            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="   Search by Employee">
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Employee">
         </form>
-    
+
         <table class="attendance-table" id="attendanceTable">
             <thead>
                 <tr>
@@ -45,20 +228,20 @@
             <tbody>
                 {% for record in attendance_records %}
                 <tr>
-                    <td>{{ loop.index }}</td> <!-- Index number -->
+                    <td>{{ loop.index }}</td>
                     <td>
-                        {% if record[2] %} <!-- Profile Picture -->
+                        {% if record[2] %}
                             <img src="{{ url_for('static', filename='uploads/' ~ record[2]) }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 50%;">
                         {% else %}
                             <img src="{{ url_for('static', filename='uploads/default_profile.png') }}" alt="Default Picture" style="width: 40px; height: 40px; border-radius: 50%;">
                         {% endif %}
                     </td>
-                    <td>{{ record[0] }} {{ record[1] }}</td> <!-- Employee Name (First Name, Last Name) -->
-                    <td>{{ record[8] }}</td> <!-- Date -->
-                    <td>{{ record[3] }}</td> <!-- Department -->
-                    <td>{{ record[4] }}</td> <!-- Check In -->
-                    <td>{{ record[5] }}</td> <!-- Check Out -->
-                    <td>{{ record[6] }}</td> <!-- Status -->
+                    <td>{{ record[0] }} {{ record[1] }}</td>
+                    <td>{{ record[8] }}</td>
+                    <td>{{ record[3] }}</td>
+                    <td>{{ record[4] }}</td>
+                    <td>{{ record[5] }}</td>
+                    <td>{{ record[6] }}</td>
                     <td>
                         <button onclick="populateForm('{{ record[0] }}', '{{ record[1] }}', '{{ record[4] }}', '{{ record[5] }}', '{{ record[6] }}', '{{ record[7] }}')">Update</button>
                         <form method="POST" action="/admin/attendance/delete/{{ record[7] }}" style="display:inline;">
@@ -70,51 +253,30 @@
             </tbody>
         </table>
     </div>
-    
-    <!-- Update Form (Hidden by default, displayed when Update is clicked) -->
-    <div id="updateForm" class="container-update" style="display:none;">
-        <h2>Update Attendance</h2>
-    
-        <form method="POST" action="/admin/attendance/update">
-            <label>Employee Name:</label>
-            <input type="text" id="employee_name" disabled>
-    
-            <label>Check In:</label>
-            <input type="time" name="check_in" id="check_in" step="1" required>
-    
-            <label>Check Out:</label>
-            <input type="time" name="check_out" id="check_out" step="1" required>
-    
-            <label>Status:</label>
-            <select name="status" id="status" required>
-                <option value="On Time">On Time</option>
-                <option value="Late">Late</option>
-                <option value="Early">Early</option>
-                <option value="Overtime">Overtime</option>
-            </select>
-    
-            <!-- Hidden field to store the attendance ID -->
-            <input type="hidden" name="attendance_id" id="attendance_id">
-    
-            <button type="submit" class="update-btn">Update</button>
-        </form>
-    </div>
-    
-    <script>
-        
-        // Sidebar Toggle
-        const sidebar = document.querySelector('.sidebar');
-        const toggleBtn = document.querySelector('.toggle-btn');
-        const mainContainer = document.querySelector('.main-container');
 
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            if (sidebar.classList.contains('active')) {
-                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-            } else {
-                mainContainer.style.marginLeft = '80px'; /* Default margin */
-            }
-        });
+
+
+    <script>
+
+                    // Sidebar Toggle
+                    const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const mainContainer = document.querySelector('.main-container');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                if (sidebar.classList.contains('active')) {
+                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+                } else {
+                    mainContainer.style.marginLeft = '80px'; /* Default margin */
+                }
+            });
+
+        // Toggle the visibility of the calculation form
+        function toggleCalculationForm() {
+            const form = document.getElementById('hourCalculationForm');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
 
         // Populate Update Form with Existing Data
         function populateForm(firstName, lastName, checkIn, checkOut, status, attendanceId) {
@@ -133,8 +295,8 @@
             let table = document.getElementById('attendanceTable');
             let tr = table.getElementsByTagName('tr');
 
-            for (let i = 1; i < tr.length; i++) { // Skip header row
-                let td = tr[i].getElementsByTagName('td')[2]; // Employee Name column index
+            for (let i = 1; i < tr.length; i++) {
+                let td = tr[i].getElementsByTagName('td')[2];
                 if (td) {
                     let txtValue = td.textContent || td.innerText;
                     if (txtValue.toLowerCase().indexOf(filter) > -1) {
@@ -142,10 +304,53 @@
                     } else {
                         tr[i].style.display = 'none';
                     }
-                }       
+                }
             }
         }
-    </script>
 
+
+                // Toggle the visibility of the calculation form
+                function toggleCalculationForm() {
+            const form = document.getElementById('hourCalculationForm');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
+
+        // Calculate total hours
+        function calculateHours() {
+            const employeeName = document.getElementById('employee_name').value;
+
+            if (employeeName.trim() === '') {
+                alert('Please enter an employee name');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('employee_name', employeeName);
+
+            fetch('/admin/attendance/calculate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.total_hours) {
+                    document.getElementById('totalHoursResult').innerText = `Total Hours: ${data.total_hours}`;
+                } else if (data.error && data.error === 'employee_not_found') {
+                    document.getElementById('totalHoursResult').innerText = 'Employee not found. Please check the name.';
+                } else {
+                    document.getElementById('totalHoursResult').innerText = 'No data available for the given input.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('totalHoursResult').innerText = `Employee not found. Please check the name.`;
+            });
+        }
+    </script>
 </body>
 </html>

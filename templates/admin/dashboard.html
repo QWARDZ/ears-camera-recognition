@@ -6,6 +6,239 @@
     <link rel="icon" type="image/x-icon" href="/static/images/logo.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/dashboard.css') }}">
     <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+            background-color: #ecf0f1;
+            color: #333;
+        }
+
+        .main-container {
+            margin-left: 80px;
+            padding: 20px;
+            transition: margin-left 0.5s ease;
+        }
+
+        .dashboard-cards {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-section h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            flex: 1 1 30%;
+            text-align: center;
+            padding: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            max-width: 280px;
+        }
+
+        .card a {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #34495e;
+            font-weight: bold;
+        }
+
+        .card-value {
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .card-blue {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+        }
+
+        .card-green {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: #fff;
+        }
+
+        .card-red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: #fff;
+        }
+
+        .card-orange {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff;
+        }
+
+        .card-yellow {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #fff;
+        }
+
+        .card-purple {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: #fff;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-divider {
+            border: none;
+            height: 2px;
+            background-color: #34495e;
+            margin: 20px 0;
+        }
+
+        .recent-attendees {
+            margin-top: 40px;
+            padding: 25px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .recent-attendees .chart-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .attendee-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .attendee {
+            display: flex;
+            justify-content: center;
+        }
+
+        .attendee-card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            width: 100%;
+            max-width: 220px;
+        }
+
+        .attendee-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .attendee img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .attendee-details {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #ecf0f1;
+        }
+
+        .attendee-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0 5px;
+        }
+
+        .check-in, .check-out {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+
+        .check-in::before, .check-out::before {
+            content: "● ";
+            font-size: 12px;
+            color: #3498db;
+        }
+
+        .gender-section {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            gap: 30px;
+        }
+
+        .gender-box {
+            background-color: #867373;
+            padding: 25px;
+            border-radius: 12px;
+            width: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .gender-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .gender-column {
+            width: 48%;
+            max-height: 200px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .gender-column h2 {
+            font-size: 19px;
+            margin-bottom: 15px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .gender-column ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .gender-column ul li {
+            font-size: 16px;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+    </style>
 </head>
 <body>
 
@@ -60,6 +293,29 @@
             </div>
         </div>
 
+        <!-- Gender Section -->
+        <div class="gender-section">
+            <div class="gender-box">
+                <div class="gender-column">
+                    <h2>Male Employees ({{ male_count }})</h2>
+                    <ul>
+                        {% for male in male_employees %}
+                        <li>{{ loop.index }}. {{ male[0] }} {{ male[1] }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="gender-column">
+                    <h2>Female Employees ({{ female_count }})</h2>
+                    <ul>
+                        {% for female in female_employees %}
+                        <li>{{ loop.index }}. {{ female[0] }} {{ female[1] }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Divider -->
         <hr class="section-divider">
 
@@ -85,19 +341,19 @@
     </div>
 
     <script>
-            // Sidebar Toggle
-            const sidebar = document.querySelector('.sidebar');
-            const toggleBtn = document.querySelector('.toggle-btn');
-            const mainContainer = document.querySelector('.main-container');
+        // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const mainContainer = document.querySelector('.main-container');
 
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                if (sidebar.classList.contains('active')) {
-                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-                } else {
-                    mainContainer.style.marginLeft = '80px'; /* Default margin */
-                }
-            });
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+            } else {
+                mainContainer.style.marginLeft = '80px'; /* Default margin */
+            }
+        });
     </script>
 </body>
 </html>

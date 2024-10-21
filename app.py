@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 from flask_mysqldb import MySQL 
 from werkzeug.utils import secure_filename 
 import os 
+
 
 # Define sang EmployeeAttendance class
 class EmployeeAttendance:
@@ -122,11 +123,25 @@ class EmployeeAttendance:
                         IFNULL(DATE_FORMAT(a.check_out, '%h:%i %p'), 'Not Checked Out') as check_out
                     FROM attendance a
                     LEFT JOIN employees e ON a.employee_id = e.id
-                    WHERE TIMESTAMPDIFF(MINUTE, a.check_in, NOW()) <= 5
+                    WHERE TIMESTAMPDIFF(MINUTE, a.check_in, NOW()) <= 20
                     ORDER BY a.date DESC, a.check_in DESC
-                    LIMIT 5
+                    LIMIT 20
                 """)
-                recent_attendees = cur.fetchall() # Ginakuha naton ang recent attendees
+                recent_attendees = cur.fetchall()  # Ginakuha naton ang recent attendees
+
+                # Query to count male and female employees
+                cur.execute("SELECT COUNT(*) FROM employees WHERE gender = 'Male'")
+                male_count = cur.fetchone()[0]
+
+                cur.execute("SELECT COUNT(*) FROM employees WHERE gender = 'Female'")
+                female_count = cur.fetchone()[0]
+
+                # Query to get details of male and female employees
+                cur.execute("SELECT first_name, last_name FROM employees WHERE gender = 'Male'")
+                male_employees = cur.fetchall()
+
+                cur.execute("SELECT first_name, last_name FROM employees WHERE gender = 'Female'")
+                female_employees = cur.fetchall()
 
                 cur.close()
                 # Ginapasa naton ang mga data sa template para ma-display sa admin dashboard
@@ -138,6 +153,10 @@ class EmployeeAttendance:
                                     on_time_count=on_time_count,
                                     late_count=late_count,
                                     recent_attendees=recent_attendees,
+                                    male_count=male_count,
+                                    female_count=female_count,
+                                    male_employees=male_employees,
+                                    female_employees=female_employees,
                                     user_name=user_name,
                                     user_profile_picture=user_profile_picture,
                                     user_data=user_data)
@@ -147,13 +166,13 @@ class EmployeeAttendance:
 
 #----------------------------------------------------------
 
-        # Route para sa pag-manage sang departments
+       # Route for managing departments
         @self.app.route('/admin/departments', methods=['GET', 'POST'])
         def manage_departments():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
 
-                # Ginakuwa ang user data para sa admin dashboard top bar
+                # Fetch user data for the admin dashboard top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -161,26 +180,33 @@ class EmployeeAttendance:
                 """, [session['username']])
                 user_data = cur.fetchone()
 
-                # Default nga values kung wala user data nga nakuha
+                # Default values if no user data is found
                 if not user_data:
                     user_data = ('Unknown', 'User', 'default_profile.png')
-                    
+                
                 if request.method == 'POST':
                     department_id = request.form.get('department_id')  
-                    department_name = request.form['department_name'] 
+                    department_name = request.form['department_name'].strip()  # Strip whitespace
 
-                    # I-update ang existing nga department kung may ID nga present
-                    if department_id:
+                    if department_id:  # If department_id exists, update existing department
                         cur.execute("UPDATE departments SET name = %s WHERE id = %s", (department_name, department_id))
-                    else:
-                        # I-insert ang bag-o nga department, ang MySQL na maghandle sang auto-increment ID
-                        cur.execute("INSERT INTO departments (name) VALUES (%s)", [department_name])
+                    else:  # Otherwise, insert new department
+                        # Check if department name already exists
+                        cur.execute("SELECT id FROM departments WHERE name = %s", [department_name])
+                        existing_department = cur.fetchone()
 
-                    # I-commit ang mga changes sa database
+                        if existing_department:
+                            # Do nothing if department already exists
+                            pass
+                        else:
+                            # Insert the new department
+                            cur.execute("INSERT INTO departments (name) VALUES (%s)", [department_name])
+
+                    # Commit changes to the database
                     self.mysql.connection.commit()
                     return redirect('/admin/departments')
 
-                # Kuaon ang mga departments para idisplay sa page
+                # Fetch departments to display on the page
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
                 cur.close()
@@ -189,7 +215,7 @@ class EmployeeAttendance:
             else:
                 return redirect('/login')
 
-        # Route para sa pag-delete sang department
+        # Route for deleting a department
         @self.app.route('/admin/departments/delete/<int:department_id>', methods=['POST'])
         def delete_department(department_id):
             if 'username' in session and session['role'] == 'admin':
@@ -211,13 +237,13 @@ class EmployeeAttendance:
         def allowed_file(filename):
             return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
         
-        # Route para sa employee management (GET para sa display, POST para sa pag-add/update)
+        # Route for managing employees (GET for display, POST for add/update)
         @self.app.route('/admin/employees', methods=['GET', 'POST'])
         def manage_employees():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
-                # Gakuha naton ang user data para sa top bar sang page
+
+                # Fetch user data for the top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -225,9 +251,9 @@ class EmployeeAttendance:
                 """, [session['username']])
                 user_data = cur.fetchone()
 
-                # Handle POST request para sa pag-add or update sang employee details
+                # Handle POST request to add or update employee details
                 if request.method == 'POST':
-                    # Ginakuha naton ang details and etc halin sa form
+                    # Extracting data from the form
                     employee_id = request.form.get('employee_id')
                     first_name = request.form['first_name']
                     last_name = request.form['last_name']
@@ -236,14 +262,14 @@ class EmployeeAttendance:
                     gender = request.form['gender']
                     profile_picture = request.files.get('profile_picture')
 
-                    # Handling sang profile picture upload
-                    profile_picture_filename = None  # Default value kon wala sang profile picture
-                    if profile_picture and allowed_file(profile_picture.filename):  # Ginacheck kun may profile picture kag allowed ang file type
-                        filename = secure_filename(profile_picture.filename)  # Ginasanitize ang filename
-                        profile_picture.save(os.path.join('static/uploads', filename))  # Ginastore naton ang file sa upload directory
-                        profile_picture_filename = filename  # Ginaset naton ang filename para ma-store sa database
+                    # Handling profile picture upload
+                    profile_picture_filename = None
+                    if profile_picture and allowed_file(profile_picture.filename):
+                        filename = secure_filename(profile_picture.filename)
+                        profile_picture.save(os.path.join(self.app.config['UPLOAD_FOLDER'], filename))
+                        profile_picture_filename = filename
 
-                    # Kung may employee ID, ginaupdate naton ang existing employee
+                    # Update existing employee
                     if employee_id:
                         if profile_picture_filename:
                             cur.execute(
@@ -256,6 +282,7 @@ class EmployeeAttendance:
                                 (first_name, last_name, department, shift, gender, employee_id)
                             )
                     else:
+                        # Insert new employee
                         cur.execute(
                             "INSERT INTO employees (first_name, last_name, department, shift, gender, profile_picture) VALUES (%s, %s, %s, %s, %s, %s)",
                             (first_name, last_name, department, shift, gender, profile_picture_filename)
@@ -264,7 +291,7 @@ class EmployeeAttendance:
                         cur.execute("SELECT LAST_INSERT_ID()")
                         new_employee_id = cur.fetchone()[0]
 
-                        # Automatically ginacrete naton ang user account para sa bagong employee
+                        # Automatically create user account for the new employee
                         username = request.form['username']
                         password = request.form['password']
                         cur.execute("INSERT INTO users (username, password, role, employee_id) VALUES (%s, %s, 'employee', %s)",
@@ -273,9 +300,12 @@ class EmployeeAttendance:
                     self.mysql.connection.commit()
                     return redirect('/admin/employees')
 
-                # Query para makuha ang employee data (excluding admin users)
+                # Fetch employee data (excluding admin users)
                 cur.execute("""
-                    SELECT e.id, e.first_name, e.last_name, d.name, CONCAT(s.start_time, ' - ', s.end_time) AS shift_time, e.gender, e.profile_picture
+                    SELECT e.id, e.first_name, e.last_name, d.name, s.lab_name, s.days, 
+                        DATE_FORMAT(s.start_time, '%h:%i %p') AS start_time, 
+                        DATE_FORMAT(s.end_time, '%h:%i %p') AS end_time, 
+                        e.gender, e.profile_picture
                     FROM employees e
                     LEFT JOIN departments d ON e.department = d.id
                     LEFT JOIN shifts s ON e.shift = s.id
@@ -287,23 +317,25 @@ class EmployeeAttendance:
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
 
-                cur.execute("SELECT id, start_time, end_time FROM shifts")
+                cur.execute("SELECT id, start_time, end_time, days, lab_name FROM shifts")
                 shifts = cur.fetchall()
 
                 cur.close()
 
-                # Ginabalik naton ang employee management page upod ang data sang employees, departments, kag shifts
+                # Return employee management page with employees, departments, and shifts data
                 return render_template('admin/employees.html', employees=employees, departments=departments, shifts=shifts, user_data=user_data)
             else:
                 return redirect('/login')
 
-        # Route para mag-delete sang employee kag associated data
+
+
+        # Route for deleting employee and associated data
         @self.app.route('/admin/employees/delete/<int:employee_id>', methods=['POST'])
         def delete_employee(employee_id):
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
                 try:
-                    # Gadelete kita sang attendance records nga related sa employee
+                    # Delete attendance records related to the employee
                     cur.execute("DELETE FROM attendance WHERE employee_id = %s", [employee_id])
                     cur.execute("DELETE FROM users WHERE employee_id = %s", [employee_id])
                     cur.execute("DELETE FROM employees WHERE id = %s", [employee_id])
@@ -316,62 +348,47 @@ class EmployeeAttendance:
                     cur.close()
                 return redirect('/admin/employees')
             else:
-                flash("Unauthorized action", "danger") # Error message kun indi authorized ang user
+                flash("Unauthorized action", "danger")
                 return redirect('/login')
+
 
 #----------------------------------------------------------------------------------
 
-        # Route para sa user management (GET para sa display, POST para sa pag-add/update)
+        @self.app.route('/admin/shifts/getshift', methods=['GET'])
+        def get_shifts_by_lab():
+            lab_name = request.args.get('lab_name')  # Get the lab_name from query parameters
+            
+            # Ensure lab_name is not None or empty
+            if not lab_name:
+                return jsonify([]), 400  # Return empty list and status 400 if lab_name is not provided
+
+            # Query the shifts table to get shifts based on the selected lab
+            cur = self.mysql.connection.cursor()
+            cur.execute("SELECT id, days, start_time, end_time FROM shifts WHERE lab_name = %s ORDER BY days", [lab_name])
+            shifts = cur.fetchall()
+            cur.close()
+
+            # Convert the result into a JSON-compatible format
+            shifts_data = [{'id': shift[0], 'days': shift[1], 'start_time': str(shift[2]), 'end_time': str(shift[3])} for shift in shifts]
+            
+            return jsonify(shifts_data), 200  # Return JSON data and status 200 OK
+
+
+
         @self.app.route('/admin/user', methods=['GET', 'POST'])
         def manage_users():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
 
+                # Fetch user data for the current logged-in admin (top bar details)
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
                     WHERE id = (SELECT employee_id FROM users WHERE username = %s)
                 """, [session['username']])
                 user_data = cur.fetchone()
-                
-                # Handle POST request para sa pag-add or update sang user details
-                if request.method == 'POST':
-                     # Ginakuha naton ang details and etc halin sa form
-                    user_id = request.form.get('user_id')
-                    first_name = request.form['first_name']
-                    last_name = request.form['last_name']
-                    department = request.form['department'] if request.form.get('role') == 'employee' else None
-                    shift = request.form['shift'] if request.form.get('role') == 'employee' else None
-                    gender = request.form['gender'] if request.form.get('role') == 'employee' else None
-                    username = request.form['username']
-                    role = request.form['role']
-                    password = request.form['password']
 
-                    if user_id:
-                        cur.execute("""
-                            UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s
-                            WHERE id=%s
-                        """, (first_name, last_name, department, shift, gender, user_id))
-                        cur.execute("""
-                            UPDATE users SET username=%s, password=%s, role=%s
-                            WHERE id=%s
-                        """, (username, password, role, user_id))
-                    else:
-                        cur.execute("""
-                            INSERT INTO employees (first_name, last_name, department, shift, gender)
-                            VALUES (%s, %s, %s, %s, %s)
-                        """, (first_name, last_name, department, shift, gender))
-                        cur.execute("SELECT LAST_INSERT_ID()")
-                        new_employee_id = cur.fetchone()[0]
-
-                        cur.execute("""
-                            INSERT INTO users (username, password, role, employee_id)
-                            VALUES (%s, %s, %s, %s)
-                        """, (username, password, role, new_employee_id))
-
-                    self.mysql.connection.commit()
-                    return redirect('/admin/user')
-
+                # Fetch all users for displaying in the table
                 cur.execute("""
                     SELECT u.id,
                         CONCAT(COALESCE(e.first_name, 'None'), ' ', COALESCE(e.last_name, '')) AS full_name,
@@ -387,17 +404,97 @@ class EmployeeAttendance:
                 """)
                 users = cur.fetchall()
 
+                # Fetch department details for dropdown
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
 
-                cur.execute("SELECT id, start_time, end_time FROM shifts")
-                shifts = cur.fetchall()
+                # Fetch lab details for dropdown
+                cur.execute("SELECT DISTINCT lab_name FROM shifts")
+                labs = [lab[0] for lab in cur.fetchall()]
+
+                # Handle form submission and fetch shifts if lab is selected
+                shifts = []
+                lab_name = request.form.get('lab') or request.args.get('lab_name')
+                if lab_name:
+                    cur.execute("SELECT id, days, start_time, end_time FROM shifts WHERE lab_name = %s ORDER BY days", [lab_name])
+                    shifts = cur.fetchall()
+
+                error_message = None
+
+                if request.method == 'POST':
+                    # Handle form submission for adding/updating user
+                    user_id = request.form.get('user_id')
+                    first_name = request.form['first_name']
+                    last_name = request.form['last_name']
+                    department = request.form['department'] if request.form.get('role') == 'employee' else None
+                    shift = request.form['shift'] if request.form.get('role') == 'employee' else None
+                    gender = request.form['gender'] if request.form.get('role') == 'employee' else None
+                    username = request.form['username']
+                    role = request.form['role']
+                    password = request.form['password']
+
+                    # Check if the selected shift is already full
+                    if role == 'employee' and shift:
+                        cur.execute("SELECT COUNT(*) FROM employees WHERE shift = %s", [shift])
+                        employee_count = cur.fetchone()[0]
+
+                        if employee_count >= 2:
+                            # If shift is full, show an error message
+                            error_message = "Shift is already full. Please select a different shift."
+                            cur.close()
+                            return render_template('admin/user.html', users=users, departments=departments, labs=labs, shifts=shifts, user_data=user_data, error_message=error_message)
+
+                    # Update existing user
+                    if user_id:
+                        cur.execute("""
+                            UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s
+                            WHERE id=%s
+                        """, (first_name, last_name, department, shift, gender, user_id))
+                        cur.execute("""
+                            UPDATE users SET username=%s, password=%s, role=%s
+                            WHERE id=%s
+                        """, (username, password, role, user_id))
+                    else:
+                        # Add new user
+                        cur.execute("""
+                            INSERT INTO employees (first_name, last_name, department, shift, gender)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (first_name, last_name, department, shift, gender))
+                        cur.execute("SELECT LAST_INSERT_ID()")
+                        new_employee_id = cur.fetchone()[0]
+
+                        cur.execute("""
+                            INSERT INTO users (username, password, role, employee_id)
+                            VALUES (%s, %s, %s, %s)
+                        """, (username, password, role, new_employee_id))
+
+                    self.mysql.connection.commit()
+                    cur.close()
+                    return redirect('/admin/user')
 
                 cur.close()
+                return render_template('admin/user.html', users=users, departments=departments, labs=labs, shifts=shifts, selected_lab=lab_name, user_data=user_data, error_message=error_message)
 
-                return render_template('admin/user.html', users=users, departments=departments, shifts=shifts, user_data=user_data)
             else:
                 return redirect('/login')
+
+
+        @self.app.route('/admin/shifts/check_shift_full', methods=['GET'])
+        def check_shift_full():
+            shift_id = request.args.get('shift_id')
+            cur = self.mysql.connection.cursor()
+
+            # Check if shift already has two employees assigned
+            cur.execute("""
+                SELECT COUNT(*) FROM employees WHERE shift = %s
+            """, [shift_id])
+            employee_count = cur.fetchone()[0]
+            cur.close()
+
+            is_full = employee_count >= 2
+            return jsonify({'is_full': is_full})
+
+
             
         # Route para mag-delete sang user
         @self.app.route('/admin/user/delete/<int:user_id>', methods=['POST'])
@@ -429,12 +526,16 @@ class EmployeeAttendance:
 
 #----------------------------------------------------------------------
 
-        # Routes para sa Shift Management
+
+
+
+        # Updated route for managing shifts
         @self.app.route('/admin/shifts', methods=['GET', 'POST'])
         def manage_shifts():
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
 
+                # Fetch user data
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -446,22 +547,54 @@ class EmployeeAttendance:
                     shift_id = request.form.get('shift_id')
                     start_time = request.form.get('start_time')
                     end_time = request.form.get('end_time')
+                    lab_name = request.form.get('lab_name')
+                    new_lab_name = request.form.get('new_lab_name')
+                    days = request.form.get('days')
+
+                    # Use new_lab_name if provided, otherwise use the selected lab_name
+                    if new_lab_name:
+                        lab_name = new_lab_name
 
                     if shift_id:
-                        cur.execute("UPDATE shifts SET start_time = %s, end_time = %s WHERE id = %s", (start_time, end_time, shift_id))
+                        # Update existing shift
+                        cur.execute("UPDATE shifts SET start_time = %s, end_time = %s, lab_name = %s, days = %s WHERE id = %s", 
+                                    (start_time, end_time, lab_name, days, shift_id))
                     else:
-                        cur.execute("INSERT INTO shifts (start_time, end_time) VALUES (%s, %s)", (start_time, end_time))
+                        # Insert new shift
+                        cur.execute("INSERT INTO shifts (start_time, end_time, lab_name, days) VALUES (%s, %s, %s, %s)", 
+                                    (start_time, end_time, lab_name, days))
 
                     self.mysql.connection.commit()
                     return redirect('/admin/shifts')
 
-                cur.execute("SELECT id, start_time, end_time FROM shifts")
+                # Fetch shifts and group them by lab_name and days
+                cur.execute("SELECT id, start_time, end_time, lab_name, days FROM shifts ORDER BY lab_name, days")
                 shifts = cur.fetchall()
+
+                # Fetch all unique lab names
+                cur.execute("SELECT DISTINCT lab_name FROM shifts")
+                lab_names = [row[0] for row in cur.fetchall()]
                 cur.close()
 
-                return render_template('admin/shifts.html', shifts=shifts, user_data=user_data)
+                # Group shifts by lab and then by day
+                shifts_by_lab = {}
+                for shift in shifts:
+                    lab = shift[3]  # Lab name
+                    day = shift[4]  # Day of the week
+
+                    if lab not in shifts_by_lab:
+                        shifts_by_lab[lab] = {}
+                    
+                    if day not in shifts_by_lab[lab]:
+                        shifts_by_lab[lab][day] = []
+
+                    shifts_by_lab[lab][day].append(shift)
+
+                return render_template('admin/shifts.html', shifts_by_lab=shifts_by_lab, user_data=user_data, lab_names=lab_names)
             else:
                 return redirect('/login')
+
+
 
         @self.app.route('/admin/shifts/delete/<int:shift_id>', methods=['POST'])
         def delete_shift(shift_id):
@@ -562,6 +695,58 @@ class EmployeeAttendance:
                 return redirect('/admin/attendance')
             else:
                 return redirect('/login')
+            
+            
+        from flask import request, jsonify
+        from datetime import timedelta
+
+        # Route to calculate total hours rendered by an employee
+        @self.app.route('/admin/attendance/calculate', methods=['POST'])
+        def calculate_hours():
+            if 'username' in session and session['role'] == 'admin':
+                employee_name = request.form.get('employee_name')
+                employee_id = None
+
+                # Split the name into first name and last name
+                first_name, last_name = employee_name.split()
+
+                # Get employee ID from the name
+                cur = self.mysql.connection.cursor()
+                cur.execute("""
+                    SELECT id FROM employees WHERE first_name = %s AND last_name = %s
+                """, (first_name, last_name))
+                employee_id = cur.fetchone()
+
+                if employee_id:
+                    employee_id = employee_id[0]
+
+                    # Calculate total hours for this employee
+                    cur.execute("""
+                        SELECT TIMEDIFF(check_out, check_in) as duty_hours
+                        FROM attendance
+                        WHERE employee_id = %s
+                    """, (employee_id,))
+                    hours_data = cur.fetchall()
+
+                    total_hours = timedelta()
+                    for row in hours_data:
+                        duty_hours = row[0]
+                        if duty_hours:
+                            h, m, s = map(int, str(duty_hours).split(':'))
+                            total_hours += timedelta(hours=h, minutes=m, seconds=s)
+
+                    # Close the cursor
+                    cur.close()
+
+                    # Return the total hours as a response
+                    return jsonify({
+                        'total_hours': str(total_hours)
+                    })
+                else:
+                    return jsonify({'error': 'Employee not found'}), 404
+            else:
+                return jsonify({'error': 'Unauthorized access'}), 403
+
 
 #---------------------------------------------------------------------------
 
@@ -700,6 +885,7 @@ class EmployeeAttendance:
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
 
+                # Fetch user details for the top bar
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -716,11 +902,11 @@ class EmployeeAttendance:
 
                 employee_id = result[0]
                 
-                # Gakuha naton ang employee details halin sa database, upod ang shift times
+                # Fetching the employee details from the database, including shift details, lab, and day
                 cur.execute("""
                     SELECT e.id, e.first_name, e.last_name, e.gender, d.name as department,
                         CONCAT(TIME_FORMAT(s.start_time, '%%h:%%i %%p'), ' - ', TIME_FORMAT(s.end_time, '%%h:%%i %%p')) as shift_time,
-                        e.profile_picture
+                        s.lab_name, s.days, e.profile_picture
                     FROM employees e
                     LEFT JOIN shifts s ON e.shift = s.id
                     LEFT JOIN departments d ON e.department = d.id
@@ -728,7 +914,7 @@ class EmployeeAttendance:
                 """, (employee_id,))
                 employee_data = cur.fetchone()
 
-                # Gacheck naton kun may data sang employee para malikawan ang error
+                # Checking if employee data is found to avoid errors
                 if employee_data:
                     employee = {
                         'employee_id': employee_data[0],
@@ -737,16 +923,19 @@ class EmployeeAttendance:
                         'gender': employee_data[3],
                         'department': employee_data[4],
                         'shift': employee_data[5],
-                        'profile_picture_url': url_for('static', filename='uploads/' + employee_data[6]) if employee_data[6] else None
+                        'lab_name': employee_data[6],
+                        'day': employee_data[7],
+                        'profile_picture_url': url_for('static', filename='uploads/' + employee_data[8]) if employee_data[8] else None
                     }
                     
-                    # Ginabalik naton ang employee profile page kag ginapasa ang employee details
+                    # Returning the employee profile page with the employee details
                     return render_template('employee/profile.html', employee=employee, user_data=user_data)
                 else:
                     flash('Employee data not found.')
                     return redirect('/login')
             else:
                 return redirect('/login')
+
 
         # Route para mag-upload sang profile picture sang employee
         @self.app.route('/employee/profile/upload', methods=['POST'])
@@ -845,7 +1034,7 @@ class EmployeeAttendance:
 
     # Function para paandaron ang Flask application
     def run(self):
-        self.app.run(debug=True, port=3000) #host='',
+        self.app.run(debug=True) #host='',
 
 # Main function para mag-instantiate sang EmployeeAttendance class kag i-run ang Flask app
 if __name__ == "__main__":

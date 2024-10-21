@@ -7,15 +7,202 @@
     <link rel="icon" type="image/x-icon" href="/static/images/logo.png">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/user.css') }}">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevents horizontal scrolling on the body */
+        }
+
+        .main-container {
+            max-width: 100%;
+            margin-left: 75px;
+            padding: 20px;
+            background-color: #dbdada;
+            transition: margin-left 0.5s ease;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-section h1 {
+            font-size: 24px;
+            color: #343a40;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background-color: #26c726;
+            color: #ffffff;
+            border: none;
+            padding: 8px 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .table-container {
+            margin-top: 20px;
+            width: 100%;
+            overflow-x: hidden; /* Prevent horizontal overflow */
+        }
+
+        table.dataTable {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            table-layout: auto;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #dee2e6; /* Add border to create grid lines */
+        }
+
+        td {
+            font-size: 14px;
+            color: #495057;
+            text-align: center;
+        }
+
+        th {
+            background-color: #343a40;
+            color: #fff;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 6px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin: 0 2px;
+            width: auto;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #c4d8c8;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #495057;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .save-btn {
+            background-color: #28a745;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .cancel-btn {
+            background-color: #6c757d;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .dataTables_wrapper .dataTables_length, 
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 15px;
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            font-size: 14px;
+        }
+
+        .dataTables_length select,
+        .dataTables_filter input {
+            border: 1px solid #ced4da;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            float: left;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            float: right;
+        }
+    </style>
 </head>
 <body>
 
     {% include 'layout/admin_nav.html' %}
 
     <div class="main-container">
+        <!-- Error message alert -->
+        {% if error_message %}
+        <div class="alert alert-error" id="errorMessageBox">
+            <span>{{ error_message }}</span>
+            <button class="close-btn" onclick="this.parentElement.style.display='none';">&times;</button>
+        </div>
+        {% endif %}
+
         <div class="header-section">
             <h1>Manage Users</h1>
-            <button class="btn btn-primary" onclick="showRoleSelection()">+ Add New User</button>
+            <button class="btn btn-primary" onclick="showAddUserOptions()">+ Add New User</button>
         </div>
 
         <div class="table-container">
@@ -46,8 +233,6 @@
                         <td>{{ user[2] }}</td>
                         <td>{{ user[4] }}</td>
                         <td>{{ user[3] }}</td>
-                
-                        
                         <td>
                             <button class="btn btn-primary" 
                             onclick="editUser('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[2] }}', '{{ user[4] }}', '{{ user[3] }}', '{{ user[7] }}', '{{ user[5] }}', '{{ user[6] }}')">Edit</button>                        
@@ -58,31 +243,19 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-                
             </table>
         </div>
     </div>
-
-    <!-- Modal for Role Selection -->
-    <div id="roleSelectionModal" class="modal">
-        <div class="modal-content">
-            <h2>Select Role</h2>
-            <div class="role-selection">
-                <button class="btn btn-primary" onclick="showAddUserForm('admin')">Add New Admin</button>
-                <button class="btn btn-primary" onclick="showAddUserForm('employee')">Add New Employee</button>
-                <button class="btn cancel-btn" onclick="closeModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal for Adding/Editing User -->
     <div id="userModal" class="modal">
         <div class="modal-content">
             <h2>User Master Data</h2>
-            <form method="POST" action="/admin/user">
+            <!-- Error message box -->
+            <div id="errorBox" class="alert alert-warning" style="display: none;"></div>
+            
+            <form method="POST" action="/admin/user" id="userForm">
                 <input type="hidden" id="user_id" name="user_id">
-                <input type="hidden" id="role" name="role"> <!-- Role field for backend processing -->
-
+                <input type="hidden" id="role" name="role">
+    
                 <!-- Employee Information -->
                 <div class="form-group">
                     <label for="first_name">First Name</label>
@@ -92,7 +265,7 @@
                     <label for="last_name">Last Name</label>
                     <input type="text" id="last_name" name="last_name" required>
                 </div>
-
+    
                 <div class="form-group" id="gender_field">
                     <label for="gender">Gender</label>
                     <select id="gender" name="gender">
@@ -101,25 +274,37 @@
                         <option value="Other">Other</option>
                     </select>
                 </div>
-
+    
                 <div class="form-group" id="department_field">
                     <label for="department">Department</label>
                     <select id="department" name="department">
+                        <option value="">Select Department</option>
                         {% for department in departments %}
                             <option value="{{ department[0] }}">{{ department[1] }}</option>
                         {% endfor %}
                     </select>
                 </div>
-
-                <div class="form-group" id="shift_field">
-                    <label for="shift">Shift</label>
-                    <select id="shift" name="shift">
-                        {% for shift in shifts %}
-                            <option value="{{ shift[0] }}">{{ shift[1] }} - {{ shift[2] }}</option>
+    
+                <!-- Lab and Shift Selection -->
+                <div class="form-group" id="lab_field">
+                    <label for="lab">Lab</label>
+                    <select id="lab" name="lab">
+                        <option value="">Select Lab</option>
+                        {% for lab_name in labs %}
+                            <option value="{{ lab_name }}" {% if selected_lab == lab_name %}selected{% endif %}>{{ lab_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
-
+                
+                <div class="form-group" id="shift_field">
+                    <label for="shift">Shift</label>
+                    <select id="shift" name="shift">
+                        <option value="">Select Shift</option>
+                        <!-- This will be populated dynamically -->
+                    </select>
+                </div>
+                
+                
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required>
@@ -128,10 +313,19 @@
                     <label for="password">Password</label>
                     <input type="text" id="password" name="password" required>
                 </div>
-
-                <button type="submit" class="btn save-btn">Save</button>
+    
+                <button type="submit" class="btn save-btn" id="saveButton">Save</button>
                 <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
             </form>            
+        </div>
+    </div>
+    <!-- Modal for selecting user type -->
+    <div id="userTypeModal" class="modal">
+        <div class="modal-content">
+            <h2>Select User Type</h2>
+            <button class="btn btn-primary" onclick="showAddUserForm('admin')">Add New Admin</button>
+            <button class="btn btn-primary" onclick="showAddUserForm('employee')">Add New Employee</button>
+            <button class="btn cancel-btn" onclick="closeUserTypeModal()">Cancel</button>
         </div>
     </div>
 
@@ -139,38 +333,45 @@
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
 
-        // Sidebar Toggle
-        const sidebar = document.querySelector('.sidebar');
-        const toggleBtn = document.querySelector('.toggle-btn');
-        const mainContainer = document.querySelector('.main-container');
+                    // Sidebar Toggle
+                    const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const mainContainer = document.querySelector('.main-container');
 
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            if (sidebar.classList.contains('active')) {
-                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-            } else {
-                mainContainer.style.marginLeft = '80px'; /* Default margin */
-            }
-        });
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                if (sidebar.classList.contains('active')) {
+                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+                } else {
+                    mainContainer.style.marginLeft = '80px'; /* Default margin */
+                }
+            });
 
+            $(document).ready(function() {
+    $('#userTable').DataTable({
+        "ordering": false // Disable sorting for all columns
+    });
+});
 
         $(document).ready(function() {
             $('#userTable').DataTable();
 
-            var roleSelectionModal = document.getElementById("roleSelectionModal");
             var userModal = document.getElementById("userModal");
+            var userTypeModal = document.getElementById("userTypeModal");
             var userIdInput = document.getElementById("user_id");
             var firstNameInput = document.getElementById("first_name");
             var lastNameInput = document.getElementById("last_name");
             var departmentInput = document.getElementById("department");
+            var labInput = document.getElementById("lab");
             var shiftInput = document.getElementById("shift");
             var genderInput = document.getElementById("gender");
             var usernameInput = document.getElementById("username");
             var roleInput = document.getElementById("role");
             var passwordInput = document.getElementById("password");
 
-            window.showRoleSelection = function() {
-                roleSelectionModal.style.display = "block";
+            window.showAddUserOptions = function() {
+                userTypeModal.style.display = "flex";
+userModal.style.display = "none"; // Show the user type selection modal
             };
 
             window.showAddUserForm = function(role) {
@@ -178,78 +379,124 @@
                 firstNameInput.value = '';
                 lastNameInput.value = '';
                 departmentInput.value = '';
+                labInput.value = '';
                 shiftInput.value = '';
                 genderInput.value = 'Male';
                 usernameInput.value = '';
-                roleInput.value = role;
+                roleInput.value = role; // Set role as per the selection (admin or employee)
                 passwordInput.value = '';
-                toggleFormFields(role);
-                userModal.style.display = "block";
-                roleSelectionModal.style.display = "none";
+
+                if (role === 'admin') {
+                    departmentInput.required = false;
+document.getElementById('department_field').style.display = 'none';
+                    document.getElementById('lab_field').style.display = 'none';
+                    document.getElementById('shift_field').style.display = 'none';
+                    document.getElementById('gender_field').style.display = 'none';
+                } else {
+                    departmentInput.required = true;
+document.getElementById('department_field').style.display = 'block';
+                    document.getElementById('lab_field').style.display = 'block';
+                    document.getElementById('shift_field').style.display = 'block';
+                    document.getElementById('gender_field').style.display = 'block';
+                }
+                userTypeModal.style.display = "none";
+userModal.style.display = "block"; // Hide the user type selection modal
+                userModal.style.display = "block"; // Show the add user modal
             };
 
-            window.editUser = function(id, first_name, last_name, username, password, role, gender, department, shift) {
-            userIdInput.value = id;
-            firstNameInput.value = first_name;
-            lastNameInput.value = last_name;
-            departmentInput.value = department || '';
-            shiftInput.value = shift || '';
-            genderInput.value = gender || 'Male';
-            usernameInput.value = username;
-            roleInput.value = role;
-            passwordInput.value = password;
-            toggleFormFields(role); // This will hide/show fields based on the role
-            userModal.style.display = "block";
-        };
+            window.closeUserTypeModal = function() {
+                userTypeModal.style.display = "none"; // Hide the user type selection modal
+            };
 
+            window.editUser = function(id, first_name, last_name, username, password, role, gender, department, shift, lab) {
+                userIdInput.value = id;
+                firstNameInput.value = first_name;
+                lastNameInput.value = last_name;
+                departmentInput.value = department || '';
+                labInput.value = lab || '';
+                shiftInput.value = shift || '';
+                genderInput.value = gender || 'Male';
+                usernameInput.value = username;
+                roleInput.value = role;
+                passwordInput.value = password;
+
+                if (role === 'admin') {
+                    document.getElementById('department_field').style.display = 'none';
+                    document.getElementById('lab_field').style.display = 'none';
+                    document.getElementById('shift_field').style.display = 'none';
+                    document.getElementById('gender_field').style.display = 'none';
+                } else {
+                    document.getElementById('department_field').style.display = 'block';
+                    document.getElementById('lab_field').style.display = 'block';
+                    document.getElementById('shift_field').style.display = 'block';
+                    document.getElementById('gender_field').style.display = 'block';
+                }
+                userModal.style.display = "flex"; // Show the modal
+            };
 
             window.closeModal = function() {
-                userModal.style.display = "none";
-                roleSelectionModal.style.display = "none";
+                userModal.style.display = "none"; // Hide the modal
             };
 
+            // Close modal if clicking outside the modal content
             window.onclick = function(event) {
-                if (event.target == userModal || event.target == roleSelectionModal) {
+                if (event.target == userModal) {
                     userModal.style.display = "none";
-                    roleSelectionModal.style.display = "none";
+                } else if (event.target == userTypeModal) {
+                    userTypeModal.style.display = "none";
                 }
             };
 
-            // Toggle form fields based on role selection
-            function toggleFormFields(role) {
-            if (role === 'admin') {
-                document.getElementById("gender_field").classList.add('hidden');
-                document.getElementById("department_field").classList.add('hidden');
-                document.getElementById("shift_field").classList.add('hidden');
-            } else {
-                document.getElementById("gender_field").classList.remove('hidden');
-                document.getElementById("department_field").classList.remove('hidden');
-                document.getElementById("shift_field").classList.remove('hidden');
-            }
-        }
-
+            // Automatically hide error message after 5 seconds
+            setTimeout(function() {
+                const errorMessageBox = document.getElementById('errorMessageBox');
+                if (errorMessageBox) {
+                    errorMessageBox.style.display = 'none';
+                }
+            }, 5000);
         });
 
 
-// JavaScript function to format time from 24-hour to 12-hour format with AM/PM
-function formatTime(time) {
-    if (!time || time === '-') {
-        return '-';  // Handle cases where the time is not available
-    }
-    
-    let [hours, minutes] = time.split(':');
-    let ampm = 'AM';
-    hours = parseInt(hours);
 
-    if (hours >= 12) {
-        ampm = 'PM';
-        if (hours > 12) hours -= 12;
-    } else if (hours === 0) {
-        hours = 12;
+        document.getElementById('lab').addEventListener('change', function() {
+    const labName = this.value;
+
+    if (!labName) {
+        document.getElementById('shift').innerHTML = '<option value="">Select Shift</option>';
+        return; // Exit if no lab is selected
     }
 
-    return `${hours}:${minutes} ${ampm}`;
-}
+    // Make an AJAX request to get the shifts for the selected lab
+    fetch(`/admin/shifts/getshift?lab_name=${labName}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const shiftSelect = document.getElementById('shift');
+            shiftSelect.innerHTML = '<option value="">Select Shift</option>'; // Clear previous options
+
+            console.log(data);  // Log the data for debugging
+
+            if (data.length === 0) {
+                console.error("No shifts available for the selected lab.");
+                return;
+            }
+
+            data.forEach(shift => {
+                const option = document.createElement('option');
+                option.value = shift.id;
+                option.textContent = `${shift.days} - ${shift.start_time} to ${shift.end_time}`;
+                shiftSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching shifts:', error));  // Log errors for debugging
+});
+
+
+
 
     </script>
 

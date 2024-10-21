@@ -6,8 +6,8 @@ body {
 }
 
 .main-container {
-    max-width: 1905px;
-    margin-left: 75px;
+    max-width: 2500px; /* Adjusted width for responsive design */
+    margin-left: 80px;
     padding: 20px;
     background-color: #dbdada;
     transition: margin-left 0.5s ease;
@@ -27,19 +27,30 @@ body {
     margin-bottom: 10px;
 }
 
-.btn-primary {
-    background-color: #26c726;
-    color: #ffffff;
-    border: none;
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+.lab-section {
+    margin-bottom: 30px; /* Space between each laboratory */
 }
 
-.btn-primary:hover {
-    background-color: #0056b3;
+.lab-section h2 {
+    font-size: 22px;
+    color: #343a40;
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.day-section {
+    margin-bottom: 20px; /* Space between each day */
+}
+
+.day-section h3 {
+    font-size: 18px;
+    color: #495057;
+    background-color: #f1f1f1;
+    padding: 8px;
+    border-left: 5px solid #26c726;
+    margin-bottom: 10px;
+    border-radius: 5px;
 }
 
 .table-container {
@@ -62,10 +73,15 @@ th, td {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6; /* Add grid line */
+}
+
+th:last-child, td:last-child {
+    border-right: none; /* Remove the last right border */
 }
 
 th.col-small, td.col-small {
-    width: 100px;
+    width: 50px; /* Adjusted width */
 }
 
 th.col-time, td.col-time {
@@ -73,7 +89,7 @@ th.col-time, td.col-time {
 }
 
 th.col-medium, td.col-medium {
-    width: 10%;
+    width: 15%; /* Adjusted width */
 }
 
 th {
@@ -105,7 +121,7 @@ td {
 }
 
 .btn-primary:hover {
-    background-color: #c4d8c8;
+    background-color: #0056b3;
 }
 
 .btn-danger:hover {
@@ -162,59 +178,269 @@ input[type="time"] {
     background-color: #6c757d;
 }
 
-.dataTables_wrapper .dataTables_length, 
-.dataTables_wrapper .dataTables_filter {
-    margin-bottom: 15px;
-}
-
-.dataTables_length label,
-.dataTables_filter label {
-    font-size: 14px;
-}
-
-.dataTables_length select,
-.dataTables_filter input {
-    border: 1px solid #ced4da;
-    padding: 5px;
-    border-radius: 4px;
-}
-
-.dataTables_wrapper .dataTables_length {
-    float: left;
-}
-
-.dataTables_wrapper .dataTables_filter {
-    float: right;
-}
+/* Responsive Design */
 
 /* Tablets (max-width: 768px) */
-@media (max-width: 0px) {
+@media (max-width: 768px) {
     .main-container {
         padding: 5px;
         width: 100%; /* Full width for mobile */
     }
+
+    .header-section h1 {
+        font-size: 18px;
+    }
+
+    .btn {
+        padding: 5px 10px;
+        font-size: 12px;
+        width: 100%; /* Full width buttons on mobile */
+    }
+
     .table-container {
         margin-top: 5px;
         padding: 0;
         width: 100%; /* Full width on mobile */
         overflow-x: auto;
     }
-    
+
     th, td {
-        font-size: 10px; /* Even smaller font for compact mobile screens */
+        font-size: 10px;
         padding: 6px;
     }
-    
-    .btn {
-        width: 100%; /* Full-width buttons */
-        padding: 8px;
-        font-size: 13px;
-        margin: 5px 0;
-    }
-    
+
     /* Modal adjustments */
     .modal-content {
-        width: 100%; /* Full width for modal on mobile */
+        width: 100%;
         padding: 10px;
     }
+}
+
+/* Small devices (max-width: 576px) */
+@media (max-width: 576px) {
+    .main-container {
+        padding: 5px;
+        margin-left: 0;
+    }
+
+    th, td {
+        font-size: 9px;
+        padding: 5px;
+    }
+
+    .btn {
+        padding: 4px;
+        font-size: 10px;
+    }
+
+    .modal-content {
+        padding: 8px;
+    }
+}
+
+/* Main container for the lab list and content */
+.table-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Laboratory list container */
+.lab-list-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 200px; /* Fixed width for the lab list */
+}
+
+/* Laboratory name box */
+.lab-header {
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lab-header:hover {
+    background-color: #0056b3;
+}
+
+/* Content container that expands on the right */
+.lab-content-container {
+    flex: 3;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+/* Day heading styling */
+.day-section h3 {
+    font-size: 18px;
+    color: #495057;
+    background-color: #f1f1f1;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 5px solid #007bff;
+    border-radius: 5px;
+}
+
+/* Clean table design */
+.day-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 1px solid #dee2e6; /* Add border to table for grid */
+}
+
+.day-table th, .day-table td {
+    text-align: left;
+    padding: 12px 15px;
+    border: 1px solid #dee2e6; /* Grid lines for all cells */
+}
+
+.day-table th {
+    background-color: #343a40;
+    color: #fff;
+    font-weight: 500;
+}
+
+.day-table td {
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Button styling */
+.btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #218838;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .table-container {
+        flex-direction: column; /* Stack on smaller screens */
+    }
+
+    .lab-list-container {
+        width: 100%;
+        order: 1;
+    }
+
+    .lab-content-container {
+        order: 2;
+    }
+
+    .lab-header {
+        font-size: 14px;
+    }
+
+    .btn {
+        font-size: 12px;
+    }
+
+    .day-table th, .day-table td {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .lab-header {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .btn {
+        font-size: 10px;
+        padding: 6px 8px;
+    }
+
+    .day-table th, .day-table td {
+        padding: 8px;
+    }
+}
+
+/* General Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #f0f0f0;
 }

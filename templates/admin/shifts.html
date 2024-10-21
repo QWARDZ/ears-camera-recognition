@@ -19,53 +19,114 @@
         </div>
 
         <div class="table-container">
-            <table id="shiftTable" class="display">
-                <thead>
-                    <tr>
-                        <th class="col-small">#</th>
-                        <th class="col-timee">Start Time</th>
-                        <th class="col-timee">End Time</th>
-                        <th class="col-medium">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for shift in shifts %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td class="col-time">{{ shift[1] }}</td> <!-- Start Time (raw data) -->
-                        <td class="col-time">{{ shift[2] }}</td> <!-- End Time (raw data) -->                        
-                        <td>
-                            <button class="btn btn-primary" onclick="editShift('{{ shift[0] }}', '{{ shift[1] }}', '{{ shift[2] }}')">Edit</button>
-                            <form method="POST" action="/admin/shifts/delete/{{ shift[0] }}" style="display:inline;">
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="lab-list-container">
+                {% for lab, lab_shifts in shifts_by_lab.items() %}
+                <div class="lab-section">
+                    <!-- Laboratory Name as a Small Clickable Box -->
+                    <div class="lab-header" id="lab-header-{{ lab }}" onclick="toggleLab('{{ lab }}')">
+                        <span>{{ lab }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        
+            <!-- Lab days and shifts will show here when clicked -->
+            <div class="lab-content-container">
+                {% for lab, lab_shifts in shifts_by_lab.items() %}
+                <div id="lab-{{ lab }}" class="lab-days-content" style="display: none;">
+                    <!-- Table Header: Only shown once at the top of the shifts for each laboratory -->
+                    <table class="display day-table">
+                        <thead>
+                            <tr>
+                                <th class="col-small">#</th>
+                                <th class="col-timee">Start Time</th>
+                                <th class="col-timee">End Time</th>
+                                <th class="col-medium">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day, day_shifts in lab_shifts.items() %}
+                            <tr>
+                                <td colspan="4">
+                                    <h3>{{ day }}</h3> <!-- Display the day heading -->
+                                </td>
+                            </tr>
+                            {% for shift in day_shifts %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ shift[1] }}</td> <!-- Start Time -->
+                                <td>{{ shift[2] }}</td> <!-- End Time -->
+                                <td>
+                                    <button class="btn btn-primary" onclick="editShift('{{ shift[0] }}', '{{ shift[1] }}', '{{ shift[2] }}', '{{ shift[3] }}', '{{ shift[4] }}')">Edit</button>
+                                    <form method="POST" action="/admin/shifts/delete/{{ shift[0] }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
         </div>
+        
+        
+        
+        
     </div>
 
-    <!-- Modal for Adding/Editing Shift -->
-    <div id="shiftModal" class="modal">
-        <div class="modal-content">
-            <h2>Shift Data</h2>
-            <form method="POST" action="/admin/shifts">
-                <input type="hidden" id="shift_id" name="shift_id">
-                <div class="form-group">
-                    <label for="start_time">Start Time</label>
-                    <input type="time" id="start_time" name="start_time" required>
-                </div>
-                <div class="form-group">
-                    <label for="end_time">End Time</label>
-                    <input type="time" id="end_time" name="end_time" required>
-                </div>
-                <button type="submit" class="btn save-btn">Save</button>
-                <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
-            </form>
-        </div>
+<!-- Modal for Adding/Editing Shift -->
+<div id="shiftModal" class="modal">
+    <div class="modal-content">
+        <h2>Shift Data</h2>
+        <form method="POST" action="/admin/shifts">
+            <input type="hidden" id="shift_id" name="shift_id">
+            
+            <!-- Dropdown to select existing lab names -->
+            <div class="form-group">
+                <label for="lab_name">Select Existing Laboratory Name</label>
+                <select id="lab_name" name="lab_name">
+                    <option value="">Choose an existing lab</option>
+                    {% for lab in lab_names %}
+                        <option value="{{ lab }}">{{ lab }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Input to add a new lab name -->
+            <div class="form-group">
+                <label for="new_lab_name">Or Add New Laboratory Name</label>
+                <input type="text" id="new_lab_name" name="new_lab_name" placeholder="Enter new lab name (optional)">
+            </div>
+
+            <div class="form-group">
+                <label for="days">Day</label>
+                <select id="days" name="days" required>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="start_time">Start Time</label>
+                <input type="time" id="start_time" name="start_time" required>
+            </div>
+
+            <div class="form-group">
+                <label for="end_time">End Time</label>
+                <input type="time" id="end_time" name="end_time" required>
+            </div>
+
+            <button type="submit" class="btn save-btn">Save</button>
+            <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
+        </form>
     </div>
+</div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -100,12 +161,15 @@
                 shiftModal.style.display = "block";
             };
 
-            window.editShift = function(id, start_time, end_time) {
-                shiftIdInput.value = id;
-                startTimeInput.value = start_time;
-                endTimeInput.value = end_time;
-                shiftModal.style.display = "block";
+            window.editShift = function(id, start_time, end_time, lab_name, days) {
+            shiftIdInput.value = id;
+            startTimeInput.value = start_time;
+            endTimeInput.value = end_time;
+            document.getElementById('lab_name').value = lab_name;
+            document.getElementById('days').value = days;
+            shiftModal.style.display = "block";
             };
+
 
             window.closeModal = function() {
                 shiftModal.style.display = "none";
@@ -142,6 +206,63 @@
             cell.textContent = formatTime(cell.textContent);
         });
     });
+
+    function toggleLab(lab) {
+    // Hide all content first
+    var allContents = document.querySelectorAll('.lab-days-content');
+    allContents.forEach(function(content) {
+        content.style.display = 'none';
+    });
+
+    // Show the clicked laboratory's content
+    var labSection = document.getElementById('lab-' + lab);
+    labSection.style.display = 'block';
+}
+
+function closeLab(lab) {
+    var labSection = document.getElementById('lab-' + lab);
+    labSection.style.display = 'none';  // Hide the days and shifts
+}
+
+    // Function to toggle the visibility of the new lab input field
+    function toggleNewLabInput() {
+        var labSelect = document.getElementById('lab_name');
+        var newLabInput = document.getElementById('new_lab_group');
+        
+        if (labSelect.value === "") {
+            newLabInput.style.display = "block";
+        } else {
+            newLabInput.style.display = "none";
+        }
+    }
+    document.getElementById('lab').addEventListener('change', function() {
+    const selectedLab = this.value;
+    const shiftSelect = document.getElementById('shift');
+
+    // Clear the existing options in the shift dropdown
+    shiftSelect.innerHTML = '<option value="">Select Shift</option>';
+
+    if (selectedLab) {
+        // Make an AJAX request to fetch the shifts for the selected lab
+        fetch(`/admin/get_shifts?lab_name=${selectedLab}`)
+            .then(response => response.json())
+            .then(data => {
+                // Log the data to check what we receive
+                console.log(data);
+
+                // Populate the shift dropdown with the fetched data
+                data.forEach(shift => {
+                    const option = document.createElement('option');
+                    option.value = shift.id;
+                    option.textContent = `${shift.days}: ${shift.start_time} - ${shift.end_time}`;
+                    shiftSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching shifts:', error);
+            });
+    }
+});
 
     </script>
 
