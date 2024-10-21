@@ -68,13 +68,31 @@
                         {% endif %}
                     </td>
                     <td>{{ record[0] }} {{ record[1] }}</td>
-                    <td>{{ record[8] }}</td>
+                    <td>{{ record[9] }}</td> <!-- Display the formatted date -->
                     <td>{{ record[3] }}</td>
-                    <td>{{ record[4] }} ({{ record[6] }})</td>
-                    <td>{% if record[5] %}{{ record[5] }} ({{ 'Overtime' if record[6] == 'Overtime' else 'On Time' }}){% else %}{% endif %}</td>
                     <td>
-                        <button onclick="populateForm('{{ record[0] }}', '{{ record[1] }}', '{{ record[4] }}', '{{ record[5] }}', '{{ record[7] }}')">Update</button>
-                        <form method="POST" action="/admin/attendance/delete/{{ record[7] }}" style="display:inline;">
+                        {{ record[4] }} 
+                        {% if record[6] %}
+                            ({{ record[6] }})
+                        {% else %}
+                            (On Time)
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if record[5] %}
+                            {{ record[5] }}
+                            {% if record[7] %}
+                                ({{ record[7] }})
+                            {% else %}
+                                (On Time)
+                            {% endif %}
+                        {% else %}
+                            Not Checked Out
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button onclick="populateForm('{{ record[0] }}', '{{ record[1] }}', '{{ record[4] }}', '{{ record[5] }}', '{{ record[6] }}', '{{ record[7] }}', '{{ record[8] }}')">Update</button>
+                        <form method="POST" action="/admin/attendance/delete/{{ record[8] }}" style="display:inline;">
                             <button type="submit">Delete</button>
                         </form>
                     </td>
@@ -84,23 +102,20 @@
         </table>
     </div>
 
-
-
     <script>
+        // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const mainContainer = document.querySelector('.main-container');
 
-                    // Sidebar Toggle
-                    const sidebar = document.querySelector('.sidebar');
-            const toggleBtn = document.querySelector('.toggle-btn');
-            const mainContainer = document.querySelector('.main-container');
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                if (sidebar.classList.contains('active')) {
-                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-                } else {
-                    mainContainer.style.marginLeft = '80px'; /* Default margin */
-                }
-            });
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+            } else {
+                mainContainer.style.marginLeft = '80px'; /* Default margin */
+            }
+        });
 
         // Toggle the visibility of the calculation form
         function toggleCalculationForm() {
@@ -109,11 +124,12 @@
         }
 
         // Populate Update Form with Existing Data
-        function populateForm(firstName, lastName, checkIn, checkOut, status, attendanceId) {
+        function populateForm(firstName, lastName, checkIn, checkOut, statusIn, statusOut, attendanceId) {
             document.getElementById('employee_name').value = firstName + " " + lastName;
             document.getElementById('check_in').value = checkIn;
             document.getElementById('check_out').value = checkOut;
-            document.getElementById('status').value = status;
+            document.getElementById('status_in').value = statusIn;
+            document.getElementById('status_out').value = statusOut;
             document.getElementById('attendance_id').value = attendanceId;
             document.getElementById('updateForm').style.display = 'block';
         }
@@ -136,13 +152,6 @@
                     }
                 }
             }
-        }
-
-
-                // Toggle the visibility of the calculation form
-                function toggleCalculationForm() {
-            const form = document.getElementById('hourCalculationForm');
-            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
         }
 
         // Calculate total hours

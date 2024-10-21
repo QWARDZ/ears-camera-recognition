@@ -110,11 +110,12 @@ class EmployeeAttendance:
                 cur.execute("SELECT COUNT(*) FROM users")
                 user_count = cur.fetchone()[0]
 
-                cur.execute("SELECT COUNT(*) FROM attendance WHERE status = 'On Time'")
+                cur.execute("SELECT COUNT(*) FROM attendance WHERE status_in = 'On Time'")
                 on_time_count = cur.fetchone()[0]
 
-                cur.execute("SELECT COUNT(*) FROM attendance WHERE status = 'Late'")
+                cur.execute("SELECT COUNT(*) FROM attendance WHERE status_in = 'Late'")
                 late_count = cur.fetchone()[0]
+
 
                 # Query para makuha ang mga recent attendees nga nag-check in sa last 20 minutes
                 cur.execute("""
@@ -630,13 +631,24 @@ class EmployeeAttendance:
                 department = request.args.get('department')
 
                 query = """
-                    SELECT e.first_name, e.last_name, e.profile_picture, d.name,
+                    SELECT 
+                        e.first_name, 
+                        e.last_name, 
+                        e.profile_picture, 
+                        d.name,
                         DATE_FORMAT(a.check_in, '%%h:%%i %%p') as check_in,
                         DATE_FORMAT(a.check_out, '%%h:%%i %%p') as check_out,
-                        a.status, a.id, a.date
-                    FROM attendance a
-                    LEFT JOIN employees e ON a.employee_id = e.id
-                    LEFT JOIN departments d ON e.department = d.id
+                        a.status_in, 
+                        a.status_out, 
+                        a.id, 
+                        DATE_FORMAT(a.date, '%%Y-%%m-%%d') as formatted_date
+                    FROM 
+                        attendance a
+                    LEFT JOIN 
+                        employees e ON a.employee_id = e.id
+                    LEFT JOIN 
+                        departments d ON e.department = d.id
+
                 """
                 params = []
 
@@ -665,12 +677,15 @@ class EmployeeAttendance:
                 check_out = request.form['check_out']
                 status = request.form['status']
 
+                status_in = request.form['status_in']
+                status_out = request.form['status_out']
                 query = """
                     UPDATE attendance
-                    SET check_in = %s, check_out = %s, status = %s
+                    SET check_in = %s, check_out = %s, status_in = %s, status_out = %s
                     WHERE id = %s
                 """
-                cur.execute(query, (check_in, check_out, status, attendance_id))
+                cur.execute(query, (check_in, check_out, status_in, status_out, attendance_id))
+
                 self.mysql.connection.commit()
 
                 cur.close()
@@ -751,12 +766,18 @@ class EmployeeAttendance:
 
 #---------------------------------------------------------------------------
 
+                
+            
+            
+        from datetime import datetime, timedelta
+
         # Route para sa employee attendance (GET para sa display, POST para sa time-in/time-out)
         @self.app.route('/employee/attendance', methods=['GET', 'POST'])
         def employee_attendance():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
 
+                # Fetch user data
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -772,8 +793,8 @@ class EmployeeAttendance:
                     return redirect('/login')
 
                 employee_id = result[0]
-                
-                # Gakuha naton ang assigned shift times sang employee
+
+                # Fetch assigned shift times for the employee
                 cur.execute("""
                     SELECT s.start_time, s.end_time
                     FROM employees e
@@ -783,100 +804,115 @@ class EmployeeAttendance:
                 shift = cur.fetchone()
                 shift_start = shift[0]
                 shift_end = shift[1]
-                
-                # Gacheck naton kun may attendance record na ang employee subong nga adlaw
+
+                # Check if there's already an attendance record for today
                 cur.execute("""
-                    SELECT check_in, check_out, DATE(date)
+                    SELECT check_in, check_out, status_in, status_out, DATE(date)
                     FROM attendance
                     WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
                 attendance_record = cur.fetchone()
-                
-                # Gacheck naton kun naka-check-in na or naka-check-out na ang employee
+
                 already_checked_in = False
                 already_checked_out = False
+                status_in = None
+                status_out = None
 
                 if attendance_record:
-                    check_in_time, check_out_time, record_date = attendance_record
+                    check_in_time, check_out_time, status_in, status_out, record_date = attendance_record
                     if check_in_time and not check_out_time:
                         already_checked_in = True
                     elif check_in_time and check_out_time:
                         already_checked_out = True
 
-                # Kung ang method POST, handle naton ang time-in or time-out action
                 if request.method == 'POST':
-                    action = request.form['action'] # Ginakuha naton kun 'time_in' or 'time_out' ang action
+                    action = request.form['action']  # Determine if 'time_in' or 'time_out' action
 
                     if action == 'time_in':
                         if already_checked_out:
-                            # Kung naka-check-out na ang employee, ginasend naton ang warning
                             flash("Today, only one time in and time out allowed. See you tomorrow.", "warning")
                             return redirect('/employee/attendance')
                         elif already_checked_in:
-                            # Kung naka-check-in na pero wala pa naka-check-out, ginasend ang info message
                             flash("You are already checked in. Please check out when you finish.", "info")
                         else:
-                            # Kung wala pa sang check-in, gina-insert naton ang new check-in record
+                            # Insert a new check-in record with the current time and calculate the status_in
                             cur.execute("""
                                 INSERT INTO attendance (employee_id, check_in, date)
                                 VALUES (%s, NOW(), NOW())""", [employee_id])
                             self.mysql.connection.commit()
 
-                            # Gina-calculate naton ang status (Late or On Time)
+                            # Fetch the check-in time and determine status_in
                             cur.execute("SELECT TIME(check_in) FROM attendance WHERE employee_id = %s AND DATE(date) = CURDATE()", [employee_id])
                             check_in_time = cur.fetchone()[0]
+                            status_in = "Late" if check_in_time > shift_start else "On Time"
 
-                            if check_in_time > shift_start:
-                                status = "Late"
-                            else:
-                                status = "On Time"
-
-                            # Gina-update naton ang status sang attendance
+                            # Update the status_in for the newly created record
                             cur.execute("""
                                 UPDATE attendance
-                                SET status = %s
-                                WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
+                                SET status_in = %s
+                                WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status_in, employee_id))
                             self.mysql.connection.commit()
 
-                            flash(f"Checked in successfully. Status: {status}", "success")
+                            flash(f"Checked in successfully. Status: {status_in}", "success")
                             return redirect('/employee/attendance')
 
                     elif action == 'time_out':
                         if not already_checked_in:
-                            # Kung wala pa naka-check-in ang employee, ginasend naton ang error message
                             flash("You haven't checked in yet!", "danger")
                             return redirect('/employee/attendance')
-                        else:   
-                            # Kung naka-check-in na, gina-update naton ang check-out time
+                        else:
+                            # Update only the check-out time for the existing record
                             cur.execute("""
                                 UPDATE attendance
                                 SET check_out = NOW()
                                 WHERE employee_id = %s AND DATE(date) = CURDATE()""", [employee_id])
                             self.mysql.connection.commit()
 
-                            # Gina-calculate naton kun may overtime
+                            # Calculate status_out based on check-out time compared to shift end
                             cur.execute("SELECT TIME(check_out) FROM attendance WHERE employee_id = %s AND DATE(date) = CURDATE()", [employee_id])
                             check_out_time = cur.fetchone()[0]
 
-                            if check_out_time > shift_end:
-                                status = "Overtime"
-                            else:
-                                status = "On Time"
-                                
-                            # Gina-update naton ang status sang attendance
+                            # Set status_out based on the check-out conditions
+                            status_out = "Early Out" if check_out_time < shift_end else ("On Time" if check_out_time <= (datetime.combine(datetime.today(), shift_end) + timedelta(minutes=20)).time() else "Overtime")
+
+                            # Update the status_out in the record
                             cur.execute("""
                                 UPDATE attendance
-                                SET status = %s
-                                WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status, employee_id))
+                                SET status_out = %s
+                                WHERE employee_id = %s AND DATE(date) = CURDATE()""", (status_out, employee_id))
                             self.mysql.connection.commit()
 
-                            flash(f"Checked out successfully. Status: {status}", "success")
+                            flash(f"Checked out successfully. Status: {status_out}", "success")
                             return redirect('/employee/attendance')
 
                 cur.close()
                 return render_template('employee/attendance.html', already_checked_in=already_checked_in, already_checked_out=already_checked_out, user_data=user_data)
-
             else:
                 return redirect('/login')
+
+
+
+            
+            
+        @self.app.route('/admin/cleanup')
+        def cleanup_attendance_records():
+            cur = self.mysql.connection.cursor()
+
+            # Delete records where check_out is not recorded within an hour of shift end time
+            cur.execute("""
+                DELETE a
+                FROM attendance a
+                JOIN employees e ON a.employee_id = e.id
+                JOIN shifts s ON e.shift = s.id
+                WHERE a.check_out IS NULL
+                AND TIMESTAMPDIFF(HOUR, CONCAT(a.date, ' ', s.end_time), NOW()) >= 1
+            """)
+            self.mysql.connection.commit()
+            cur.close()
+
+            return jsonify({'message': 'Old incomplete records cleaned up successfully'}), 200
+
+                            
+                    
 
 #-----------------------------------------------------------------------------------------------------------
 
@@ -1017,7 +1053,7 @@ class EmployeeAttendance:
                         e.profile_picture,
                         CONCAT(e.first_name, ' ', e.last_name) AS full_name,
                         CONCAT(DATE_FORMAT(s.start_time, '%%I:%%i %%p'), ' - ', DATE_FORMAT(s.end_time, '%%I:%%i %%p')) AS shift_time,
-                        a.status
+                        a.status_in, a.status_out
                     FROM attendance a
                     LEFT JOIN employees e ON a.employee_id = e.id
                     LEFT JOIN shifts s ON e.shift = s.id
@@ -1027,7 +1063,10 @@ class EmployeeAttendance:
                 attendance_records = cur.fetchall()
 
                 cur.close()
-                
+
+                # Ensure that each record includes a proper status for check-out display in the template
+                # If any missing or specific status handling is required, handle it here
+
                 # Ginabalik naton ang attendance history page upod ang list sang attendance records kag user data
                 return render_template('employee/history.html', attendance_records=attendance_records, user_data=user_data)
             else:

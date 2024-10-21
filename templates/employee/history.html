@@ -39,10 +39,13 @@
                     <td>{{ record[5] }}</td> <!-- Shift Time -->
                     <td>{{ record[1] }}{% if record[6] %} ({{ record[6] }}){% endif %}</td> <!-- Check In with Status -->
                     <td>
-                        {% if record[2] != 'Not Checked Out' %}
-                            {{ record[2] }}{% if record[6] == 'Overtime' %} ({{ record[6] }}){% endif %}
+                        {% if record[2] and record[2] != 'Not Checked Out' %}
+                            {{ record[2] }}
+                            {% if record[7] in ['Overtime', 'Early Out', 'On Time'] %}
+                                ({{ record[7] }})
+                            {% endif %}
                         {% else %}
-                            <!-- Display blank if not checked out yet -->
+                            Not Checked Out
                         {% endif %}
                     </td> <!-- Check Out with Status if Overtime -->
                 </tr>
