@@ -192,9 +192,12 @@ body {
     background-color: #867373;
     padding: 25px;
     border-radius: 12px;
-    width: 20%;
+    width: 50%;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    justify-content: space-between;
+    overflow: hidden;
 }
 
 .gender-box:hover {
@@ -202,21 +205,27 @@ body {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-.gender-box h2 {
+.gender-column {
+    width: 48%;
+    max-height: 200px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.gender-column h2 {
     font-size: 19px;
     margin-bottom: 15px;
     color: #ffffff;
     font-weight: bold;
 }
 
-.gender-box ul {
+.gender-column ul {
     list-style-type: none;
     padding: 0;
 }
 
-.gender-box ul li {
+.gender-column ul li {
     font-size: 16px;
     color: #ffffff;
     margin-bottom: 8px;
 }
-

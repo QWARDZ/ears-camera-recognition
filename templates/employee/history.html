@@ -23,9 +23,8 @@
                     <th>Name</th>
                     <th>Date</th>
                     <th>Shift Time</th>
-                    <th>Check In</th>
-                    <th>Check Out</th>
-                    <th>Status</th>
+                    <th>Check In (Status)</th>
+                    <th>Check Out (Status)</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,9 +37,14 @@
                     <td>{{ record[4] }}</td> <!-- Full Name -->
                     <td>{{ record[0] }}</td> <!-- Date -->
                     <td>{{ record[5] }}</td> <!-- Shift Time -->
-                    <td>{{ record[1] }}</td> <!-- Check In -->
-                    <td>{{ record[2] }}</td> <!-- Check Out -->
-                    <td>{{ record[6] }}</td> <!-- Status -->
+                    <td>{{ record[1] }}{% if record[6] %} ({{ record[6] }}){% endif %}</td> <!-- Check In with Status -->
+                    <td>
+                        {% if record[2] != 'Not Checked Out' %}
+                            {{ record[2] }}{% if record[6] == 'Overtime' %} ({{ record[6] }}){% endif %}
+                        {% else %}
+                            <!-- Display blank if not checked out yet -->
+                        {% endif %}
+                    </td> <!-- Check Out with Status if Overtime -->
                 </tr>
                 {% endfor %}
             </tbody>
@@ -49,22 +53,19 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
+        // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const mainContainer = document.querySelector('.main-container');
 
-            // Sidebar Toggle
-            const sidebar = document.querySelector('.sidebar');
-            const toggleBtn = document.querySelector('.toggle-btn');
-            const mainContainer = document.querySelector('.main-container');
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                if (sidebar.classList.contains('active')) {
-                    mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-                } else {
-                    mainContainer.style.marginLeft = '80px'; /* Default margin */
-                }
-            });
-
-
-        </script>
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+            } else {
+                mainContainer.style.marginLeft = '80px'; /* Default margin */
+            }
+        });
+    </script>
 </body>
 </html>

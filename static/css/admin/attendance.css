@@ -194,3 +194,167 @@ h1 {
         padding: 10px;
     }
 }
+
+.hour-calculation {
+            
+    padding: 10px;
+    width: 400px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 40px;
+    right: 280px;
+    z-index: 1000;
+}
+
+.hour-calculation h2 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #333;
+    text-align: center;
+}
+
+.hour-calculation input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.hour-calculation button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.hour-calculation button:hover {
+    background-color: #0056b3;
+}
+
+#totalHoursResult {
+    top: 170px;
+    font-size: 18px;
+    color: #28a745;
+    position: fixed;
+    right: 300px;
+
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+    color: #000;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.main-container {
+    margin-left: 75px;
+    margin-top: 0px;
+    background-color: #dbdada;
+    padding: 25px;
+    transition: margin-left 0.5s ease; /* Smooth sliding effect */
+}
+
+.header-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 26px;
+    color: #333;
+}
+
+.filter-form {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-form select, .filter-form input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.calculate-button {
+    display: flex;
+    justify-content: flex-end;
+
+}
+
+.calculate-button button {
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.calculate-button button:hover {
+    background-color: #218838;
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.attendance-table th, .attendance-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.attendance-table th {
+    background-color: #343a40;
+    color: #fff;
+}
+
+.attendance-table td {
+    background-color: #f9f9f9;
+}
+
+.attendance-table td button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.attendance-table td button:hover {
+    background-color: #ddd;
+}

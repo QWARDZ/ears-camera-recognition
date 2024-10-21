@@ -653,6 +653,7 @@ class EmployeeAttendance:
             else:
                 return redirect('/login')
 
+
         # Route para mag-update sang attendance record
         @self.app.route('/admin/attendance/update', methods=['POST'])
         def update_attendance():
