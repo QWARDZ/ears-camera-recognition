@@ -12,12 +12,13 @@ body {
     margin-left: 80px;
     padding: 20px;
     transition: margin-left 0.5s ease;
+
 }
 
 .dashboard-cards {
     display: flex;
     justify-content: space-around;
-    gap: 20px;
+    gap: 2px;
     margin-top: 20px;
     flex-wrap: wrap;
 }
@@ -39,6 +40,8 @@ body {
 
 /* Card Styles */
 .card {
+    max-width: 180px; /* Smaller card width */
+    padding: 10px; /* Reduce padding */
     background-color: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -235,7 +238,7 @@ body {
 }
 
 .check-in::before, .check-out::before {
-    content: "\25CF"; /* Corrected to use a single backslash for the Unicode character */
+    content: "\25CF";
     font-size: 12px;
     color: #3498db;
 }
@@ -244,25 +247,26 @@ body {
 .gender-section {
     display: flex;
     justify-content: space-around;
-    margin-top: 40px;
-    gap: 30px;
+    margin-top: 20px;
+    gap: 20px;
 }
 
 .gender-box {
-    background-color: #867373;
-    padding: 25px;
-    border-radius: 12px;
-    width: 50%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    padding: 5px;
+    border-radius: 16px;
+    width: 35%;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
     display: flex;
     justify-content: space-between;
     overflow: hidden;
+    color: #ffffff;
 }
 
 .gender-box:hover {
     transform: translateY(-10px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
 .gender-column {
@@ -270,10 +274,11 @@ body {
     max-height: 200px;
     overflow-y: auto;
     box-sizing: border-box;
+    padding: 10px;
 }
 
 .gender-column h2 {
-    font-size: 19px;
+    font-size: 20px;
     margin-bottom: 15px;
     color: #ffffff;
     font-weight: bold;
@@ -307,4 +312,86 @@ body {
     font-size: 18px;
     color: #2c3e50;
     font-weight: bold;
+}
+
+
+
+
+
+
+
+
+/* For tablet screens (768px and below) */
+@media (max-width: 768px) {
+    .dashboard-cards {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px; /* Reduced gap for smaller screens */
+    }
+
+    .card {
+        max-width: 90%; /* Reduce card width for a more compact view */
+        flex: 1 1 100%;
+    }
+
+    .gender-section {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .gender-box {
+        width: 90%;
+        margin-bottom: 20px;
+    }
+
+    .main-container {
+        margin-left: 10px; /* Reduce left margin for smaller screens */
+        padding: 10px; /* Reduced padding for better use of space */
+    }
+
+    .header-section h1 {
+        font-size: 24px; /* Smaller heading for mobile */
+    }
+}
+
+/* For mobile screens (480px and below) */
+@media (max-width: 480px) {
+    .dashboard-cards {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px; /* Reduced gap for smaller screens */
+    }
+
+    .card {
+        max-width: 100%; /* Maximize width usage on mobile */
+        padding: 10px; /* Reduced padding */
+    }
+
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-section h1 {
+        font-size: 20px; /* Smaller heading for mobile */
+        margin-bottom: 15px;
+    }
+
+    .user-profile {
+        margin-top: 10px; /* Adjust position for user profile */
+    }
+
+    .gender-box {
+        width: 100%; /* Full width for gender boxes on mobile */
+        padding: 20px;
+    }
+
+    .recent-attendees {
+        padding: 15px; /* Less padding for recent attendees section */
+    }
+
+    .attendee-card {
+        max-width: 90%;
+        padding: 10px; /* Reduce padding for mobile */
+    }
 }
