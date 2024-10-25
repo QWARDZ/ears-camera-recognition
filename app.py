@@ -5,13 +5,12 @@ import os
 import base64
 import pymysql
 from werkzeug.utils import secure_filename
-from flask_session import Session  # Added for Flask-Session
+from flask_session import Session
 import base64
 import io
 from flask import jsonify
 import face_recognition
 from datetime import timedelta
-
 
 
 class EmployeeAttendance:
@@ -38,6 +37,8 @@ class EmployeeAttendance:
             ssl={'disabled': True}
         )
 
+#-------------------------------------------------------------------------------------------------------
+
     # Define the `extract_face` method to handle face extraction.
     def extract_face(self, image):
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -47,12 +48,14 @@ class EmployeeAttendance:
             return None
         x, y, w, h = faces[0]
         return gray[y:y + h, x:x + w]
-
+#-----------------------------------------------------------------------------------------------------
     # Function to set up the routes
     def setup_routes(self):
         @self.app.route('/')
         def index():
             return render_template('layout/login.html')
+        
+#---------------------------------------------------------------------------------------------------
 
         @self.app.route('/verify_face', methods=['POST'])
         def verify_face():
@@ -133,6 +136,8 @@ class EmployeeAttendance:
 
             return jsonify({"success": False, "message": "Unauthorized access"})
         
+        
+#-------------------------------------------------------------------------------------------
 
 
         @self.app.route('/login', methods=['GET', 'POST'])
@@ -170,7 +175,7 @@ class EmployeeAttendance:
             return redirect('/login')
 
 
-        #-----------------------------------------------------------
+#-----------------------------------------------------------
 
         @self.app.route('/admin/dashboard')
         def admin_dashboard():
@@ -266,7 +271,7 @@ class EmployeeAttendance:
                 return redirect('/login')
 
 
-#----------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
 
         # Route for managing departments
         @self.app.route('/admin/departments', methods=['GET', 'POST'])
@@ -335,7 +340,7 @@ class EmployeeAttendance:
             else:
                 return redirect('/login')
 
-#-------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------
 
         # Set up allowed file extensions for uploads
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -470,7 +475,8 @@ class EmployeeAttendance:
 
 
 
-#----------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+
 
         # Flask/Python Backend Code
         @self.app.route('/admin/shifts/getshift', methods=['GET'])
@@ -658,7 +664,7 @@ class EmployeeAttendance:
 
 
 
-#----------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
 
         # Updated route for managing shifts
         @self.app.route('/admin/shifts', methods=['GET', 'POST'])
@@ -749,7 +755,7 @@ class EmployeeAttendance:
                 flash("Unauthorized action", "danger")
                 return redirect('/login')
 
-#---------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 
         # Route para sa Admin Attendance Report
         @self.app.route('/admin/attendance', methods=['GET'])
@@ -842,7 +848,6 @@ class EmployeeAttendance:
             else:
                 return redirect('/login')
             
-#--------------
 
         # Route to delete an attendance record
         @self.app.route('/admin/attendance/delete/<int:attendance_id>', methods=['POST'])
@@ -864,7 +869,6 @@ class EmployeeAttendance:
             else:
                 return redirect('/login')
             
-#---------------
 
         # Route to calculate total hours rendered by an employee
         @self.app.route('/admin/attendance/calculate', methods=['POST'])
@@ -912,7 +916,7 @@ class EmployeeAttendance:
 
 
 
-#---------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------
 
         from datetime import datetime, time
 
@@ -1166,11 +1170,14 @@ class EmployeeAttendance:
                 return render_template('employee/history.html', attendance_records=attendance_records, user_data=user_data)
             else:
                 return redirect('/login')
+            
+            
+#-------------------------------------------------------------------------------------------------------------------------------
 
 
     # Function para paandaron ang Flask application
     def run(self):
-        self.app.run(debug=True) #host='',
+        self.app.run(debug=True)
 
 # Main function para mag-instantiate sang EmployeeAttendance class kag i-run ang Flask app
 if __name__ == "__main__":
