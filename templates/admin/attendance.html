@@ -43,6 +43,7 @@
             <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Employee">
         </form>
 
+        <!-- Attendance Table -->
         <table class="attendance-table" id="attendanceTable">
             <thead>
                 <tr>
@@ -71,7 +72,7 @@
                     <td>{{ record[9] }}</td> <!-- Display the formatted date -->
                     <td>{{ record[3] }}</td>
                     <td>
-                        {{ record[4] }} 
+                        {{ record[4] }}
                         {% if record[6] %}
                             ({{ record[6] }})
                         {% else %}
@@ -154,7 +155,7 @@
             }
         }
 
-        // Calculate total hours
+        // Calculate total hours for the employee
         function calculateHours() {
             const employeeName = document.getElementById('employee_name').value;
 
@@ -187,7 +188,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('totalHoursResult').innerText = `Employee not found. Please check the name.`;
+                document.getElementById('totalHoursResult').innerText = 'Employee not found. Please check the name.';
             });
         }
     </script>

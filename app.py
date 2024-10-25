@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 from flask_mysqldb import MySQL 
 from werkzeug.utils import secure_filename 
-import os 
-
+import os
+from datetime import timedelta
 
 # Define sang EmployeeAttendance class
 class EmployeeAttendance:
@@ -16,6 +16,15 @@ class EmployeeAttendance:
         self.app.config['MYSQL_PASSWORD'] = ""
         self.app.config['MYSQL_DB'] = "ears_db"
         self.mysql = MySQL(self.app)
+        
+        
+        # Set session lifetime to, for example, 2 hours
+        self.app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
+
+        # Mark the session as permanent
+        @self.app.before_request
+        def make_session_permanent():
+            session.permanent = True
         
         # Ginaset ang directory sa diin ibutang ang uploaded files
         self.app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -46,6 +55,7 @@ class EmployeeAttendance:
                 if user:
                     session['username'] = username
                     session['role'] = user[0]
+                    session.permanent = True  # Set the session as permanent
                     
                     # Gacheck kung ang role sang user admin or employee, kag ginaredirect naton sila accordingly
                     if user[0] == 'admin':
@@ -70,11 +80,11 @@ class EmployeeAttendance:
         # Route para sa Admin Dashboard
         @self.app.route('/admin/dashboard')
         def admin_dashboard():
-            # Check naton kon ang user naka-login kag admin siya
+            # Check if the user is logged in and is an admin
             if 'username' in session and session['role'] == 'admin':
                 cur = self.mysql.connection.cursor()
-                
-                # Query para makuha ang user details nga gamiton sa top bar base sa logged-in admin
+
+                # Query to fetch user details for the logged-in admin
                 cur.execute("""
                     SELECT e.first_name, e.last_name, e.profile_picture
                     FROM users u
@@ -82,17 +92,12 @@ class EmployeeAttendance:
                     WHERE u.username = %s
                 """, [session['username']])
                 user_data = cur.fetchone()
-                
-                # Ginatipon naton ang data para sa user profile
-                if user_data:
-                    user_name = f"{user_data[0]} {user_data[1]}"
-                    # Check naton kun may ara sang profile picture, kung wala default picture ang gamiton
-                    user_profile_picture = url_for('static', filename='uploads/' + user_data[2]) if user_data[2] else url_for('static', filename='uploads/default_profile.png')
-                else:
-                    user_name = 'Unknown'
-                    user_profile_picture = url_for('static', filename='uploads/default_profile.png')
-                
-                # Modify the query to count only employees (excluding admins)
+
+                # Prepare user profile data
+                user_name = f"{user_data[0]} {user_data[1]}" if user_data else 'Unknown'
+                user_profile_picture = url_for('static', filename='uploads/' + user_data[2]) if user_data and user_data[2] else url_for('static', filename='uploads/default_profile.png')
+
+                # Queries to count the required data
                 cur.execute("""
                     SELECT COUNT(*) 
                     FROM employees e
@@ -116,10 +121,31 @@ class EmployeeAttendance:
                 cur.execute("SELECT COUNT(*) FROM attendance WHERE status_in = 'Late'")
                 late_count = cur.fetchone()[0]
 
+                cur.execute("SELECT COUNT(*) FROM attendance WHERE status_out = 'Overtime'")
+                overtime_count = cur.fetchone()[0]
 
-                # Query para makuha ang mga recent attendees nga nag-check in sa last 20 minutes
+                cur.execute("SELECT COUNT(*) FROM attendance WHERE status_out = 'Early Out'")
+                early_out_count = cur.fetchone()[0]
+
+
+                # Queries to count male and female employees
+                cur.execute("SELECT COUNT(*) FROM employees WHERE gender = 'Male'")
+                male_count = cur.fetchone()[0]
+
+                cur.execute("SELECT COUNT(*) FROM employees WHERE gender = 'Female'")
+                female_count = cur.fetchone()[0]
+
+                # Queries to get details of male and female employees
+                cur.execute("SELECT first_name, last_name FROM employees WHERE gender = 'Male'")
+                male_employees = cur.fetchall()
+
+                cur.execute("SELECT first_name, last_name FROM employees WHERE gender = 'Female'")
+                female_employees = cur.fetchall()
+
+                # Query to get recent attendees
                 cur.execute("""
-                    SELECT e.first_name, e.last_name, e.profile_picture,
+                    SELECT e.first_name, e.last_name, 
+                        CASE WHEN e.profile_picture IS NOT NULL THEN e.profile_picture ELSE 'default_profile.png' END AS profile_picture,
                         IFNULL(DATE_FORMAT(a.check_in, '%h:%i %p'), 'Not Checked In') as check_in,
                         IFNULL(DATE_FORMAT(a.check_out, '%h:%i %p'), 'Not Checked Out') as check_out
                     FROM attendance a
@@ -128,24 +154,12 @@ class EmployeeAttendance:
                     ORDER BY a.date DESC, a.check_in DESC
                     LIMIT 20
                 """)
-                recent_attendees = cur.fetchall()  # Ginakuha naton ang recent attendees
-
-                # Query to count male and female employees
-                cur.execute("SELECT COUNT(*) FROM employees WHERE gender = 'Male'")
-                male_count = cur.fetchone()[0]
-
-                cur.execute("SELECT COUNT(*) FROM employees WHERE gender = 'Female'")
-                female_count = cur.fetchone()[0]
-
-                # Query to get details of male and female employees
-                cur.execute("SELECT first_name, last_name FROM employees WHERE gender = 'Male'")
-                male_employees = cur.fetchall()
-
-                cur.execute("SELECT first_name, last_name FROM employees WHERE gender = 'Female'")
-                female_employees = cur.fetchall()
+                recent_attendees = cur.fetchall()
 
                 cur.close()
-                # Ginapasa naton ang mga data sa template para ma-display sa admin dashboard
+
+
+                # Pass the data to the template for rendering the admin dashboard
                 return render_template('admin/dashboard.html',
                                     employee_count=employee_count,
                                     shift_count=shift_count,
@@ -153,6 +167,8 @@ class EmployeeAttendance:
                                     user_count=user_count,
                                     on_time_count=on_time_count,
                                     late_count=late_count,
+                                    overtime_count=overtime_count,
+                                    early_out_count=early_out_count,
                                     recent_attendees=recent_attendees,
                                     male_count=male_count,
                                     female_count=female_count,
@@ -161,8 +177,10 @@ class EmployeeAttendance:
                                     user_name=user_name,
                                     user_profile_picture=user_profile_picture,
                                     user_data=user_data)
+
             else:
                 return redirect('/login')
+
 
 
 #----------------------------------------------------------
@@ -355,6 +373,7 @@ class EmployeeAttendance:
 
 #----------------------------------------------------------------------------------
 
+        # Flask/Python Backend Code
         @self.app.route('/admin/shifts/getshift', methods=['GET'])
         def get_shifts_by_lab():
             lab_name = request.args.get('lab_name')  # Get the lab_name from query parameters
@@ -373,8 +392,6 @@ class EmployeeAttendance:
             shifts_data = [{'id': shift[0], 'days': shift[1], 'start_time': str(shift[2]), 'end_time': str(shift[3])} for shift in shifts]
             
             return jsonify(shifts_data), 200  # Return JSON data and status 200 OK
-
-
 
         @self.app.route('/admin/user', methods=['GET', 'POST'])
         def manage_users():
@@ -427,9 +444,10 @@ class EmployeeAttendance:
                     user_id = request.form.get('user_id')
                     first_name = request.form['first_name']
                     last_name = request.form['last_name']
-                    department = request.form['department'] if request.form.get('role') == 'employee' else None
-                    shift = request.form['shift'] if request.form.get('role') == 'employee' else None
-                    gender = request.form['gender'] if request.form.get('role') == 'employee' else None
+                    # Safely retrieve department and other employee-related fields
+                    department = request.form.get('department') if request.form.get('role') == 'employee' else None
+                    shift = request.form.get('shift') if request.form.get('role') == 'employee' else None
+                    gender = request.form.get('gender') if request.form.get('role') == 'employee' else None
                     username = request.form['username']
                     role = request.form['role']
                     password = request.form['password']
@@ -480,6 +498,9 @@ class EmployeeAttendance:
                 return redirect('/login')
 
 
+
+
+                    
         @self.app.route('/admin/shifts/check_shift_full', methods=['GET'])
         def check_shift_full():
             shift_id = request.args.get('shift_id')
@@ -495,8 +516,6 @@ class EmployeeAttendance:
             is_full = employee_count >= 2
             return jsonify({'is_full': is_full})
 
-
-            
         # Route para mag-delete sang user
         @self.app.route('/admin/user/delete/<int:user_id>', methods=['POST'])
         def delete_user(user_id):
@@ -524,6 +543,7 @@ class EmployeeAttendance:
             else:
                 flash("Unauthorized action", "danger")
                 return redirect('/login')
+
 
 #----------------------------------------------------------------------
 
@@ -713,8 +733,6 @@ class EmployeeAttendance:
                 return redirect('/login')
             
             
-        from flask import request, jsonify
-        from datetime import timedelta
 
         # Route to calculate total hours rendered by an employee
         @self.app.route('/admin/attendance/calculate', methods=['POST'])
@@ -766,18 +784,12 @@ class EmployeeAttendance:
 
 #---------------------------------------------------------------------------
 
-                
-            
-            
-        from datetime import datetime, timedelta
-
-        # Route para sa employee attendance (GET para sa display, POST para sa time-in/time-out)
         @self.app.route('/employee/attendance', methods=['GET', 'POST'])
         def employee_attendance():
             if 'username' in session and session['role'] == 'employee':
                 cur = self.mysql.connection.cursor()
 
-                # Fetch user data
+                # Fetch user data (for displaying in the navbar or elsewhere)
                 cur.execute("""
                     SELECT first_name, last_name, profile_picture
                     FROM employees
@@ -871,8 +883,13 @@ class EmployeeAttendance:
                             cur.execute("SELECT TIME(check_out) FROM attendance WHERE employee_id = %s AND DATE(date) = CURDATE()", [employee_id])
                             check_out_time = cur.fetchone()[0]
 
-                            # Set status_out based on the check-out conditions
-                            status_out = "Early Out" if check_out_time < shift_end else ("On Time" if check_out_time <= (datetime.combine(datetime.today(), shift_end) + timedelta(minutes=20)).time() else "Overtime")
+                            # Determine status_out
+                            if check_out_time < shift_end:
+                                status_out = "Early Out"
+                            elif check_out_time == shift_end:
+                                status_out = "On Time"
+                            else:
+                                status_out = "Overtime"
 
                             # Update the status_out in the record
                             cur.execute("""
@@ -885,34 +902,11 @@ class EmployeeAttendance:
                             return redirect('/employee/attendance')
 
                 cur.close()
+
+                # Pass user_data and attendance information to the template
                 return render_template('employee/attendance.html', already_checked_in=already_checked_in, already_checked_out=already_checked_out, user_data=user_data)
             else:
                 return redirect('/login')
-
-
-
-            
-            
-        @self.app.route('/admin/cleanup')
-        def cleanup_attendance_records():
-            cur = self.mysql.connection.cursor()
-
-            # Delete records where check_out is not recorded within an hour of shift end time
-            cur.execute("""
-                DELETE a
-                FROM attendance a
-                JOIN employees e ON a.employee_id = e.id
-                JOIN shifts s ON e.shift = s.id
-                WHERE a.check_out IS NULL
-                AND TIMESTAMPDIFF(HOUR, CONCAT(a.date, ' ', s.end_time), NOW()) >= 1
-            """)
-            self.mysql.connection.commit()
-            cur.close()
-
-            return jsonify({'message': 'Old incomplete records cleaned up successfully'}), 200
-
-                            
-                    
 
 #-----------------------------------------------------------------------------------------------------------
 

@@ -13,51 +13,91 @@
 
     <div class="main-container">
         <div class="header-section">
-            <h1>Dashboard</h1> <!-- Added Manage Employees Heading -->
+            <h1>Dashboard</h1>
         </div>
+        
         <!-- Dashboard Cards -->
         <div class="dashboard-cards">
+            <!-- Employee List Card -->
             <div class="card card-blue">
                 <a href="/admin/employees">
                     <div class="card-title">Employee List</div>
-                    <div class="card-value">{{ employee_count }}</div>
+                    <div class="card-content">
+                        <div class="card-value medium-size">{{ employee_count }}</div>
+                    </div>
                 </a>
             </div>
 
+            <!-- Shifts Card -->
             <div class="card card-yellow">
                 <a href="/admin/shifts">
                     <div class="card-title">Shifts</div>
-                    <div class="card-value">{{ shift_count }}</div>
+                    <div class="card-content">
+                        <div class="card-value medium-size">{{ shift_count }}</div>
+                    </div>
                 </a>
             </div>
 
+            <!-- Total Attendance Card -->
             <div class="card card-purple">
                 <a href="/admin/attendance">
                     <div class="card-title">Total Attendance</div>
-                    <div class="card-value">{{ attendance_count }}</div>
+                    <div class="card-content">
+                        <div class="card-value medium-size">{{ attendance_count }}</div>
+                    </div>
                 </a>
             </div>
 
+            <!-- Users Card -->
             <div class="card card-orange">
                 <a href="/admin/user">
                     <div class="card-title">Users</div>
-                    <div class="card-value">{{ user_count }}</div>
+                    <div class="card-content">
+                        <div class="card-value medium-size">{{ user_count }}</div>
+                    </div>
                 </a>
             </div>
 
+            <!-- Check In Card (On Time and Late) -->
             <div class="card card-green">
-                <a href="/admin/attendance?status=on_time">
-                    <div class="card-title">Early</div>
-                    <div class="card-value">{{ on_time_count }}</div>
-                </a>
+                <div class="card-title">Check In</div>
+                <div class="card-inner">
+                    <!-- On Time Check-In -->
+                    <div class="combined-card-content">
+                        <a href="/admin/attendance?status=on_time">
+                            <div class="card-subtitle">On Time</div>
+                            <div class="card-value medium-size">{{ on_time_count }}</div>
+                        </a>
+                    </div>
+                    <!-- Late Check-In -->
+                    <div class="combined-card-content">
+                        <a href="/admin/attendance?status=late">
+                            <div class="card-subtitle">Late</div>
+                            <div class="card-value medium-size">{{ late_count }}</div>
+                        </a>
+                    </div>
+                </div>
             </div>
 
+            <!-- Check Out Card (Overtime and Early Out) -->
             <div class="card card-red">
-                <a href="/admin/attendance?status=late">
-                    <div class="card-title">Late</div>
-                    <div class="card-value">{{ late_count }}</div>
-                </a>
+                <div class="card-title">Check Out</div>
+                <div class="card-inner">
+                    <div class="combined-card-content">
+                        <a href="/admin/attendance?status=overtime">
+                            <div class="card-subtitle">Overtime</div>
+                            <div class="card-value medium-size">{{ overtime_count }}</div>
+                        </a>
+                    </div>
+                    <div class="combined-card-content">
+                        <a href="/admin/attendance?status=early_out">
+                            <div class="card-subtitle">Early Out</div>
+                            <div class="card-value medium-size">{{ early_out_count }}</div>
+                        </a>
+                    </div>
+                </div>
             </div>
+            
         </div>
 
         <!-- Gender Section -->
@@ -93,11 +133,11 @@
                 {% for attendee in recent_attendees %}
                 <div class="attendee">
                     <div class="attendee-card">
-                        <img src="{{ url_for('static', filename='uploads/' + (attendee[2] if attendee[2] else 'default_profile.png')) }}" alt="Profile Picture">
+                        <img src="{{ url_for('static', filename='uploads/' + attendee[2]) }}" alt="Profile Picture">
                         <div class="attendee-details">
                             <p class="attendee-name">{{ attendee[0] }} {{ attendee[1] }}</p>
                             <p class="check-in">Check In: {{ attendee[3] }}</p>
-                            <p class="check-out">Check Out: {{ attendee[4] if attendee[4] != 'None' else 'Not Checked Out' }}</p>
+                            <p class="check-out">Check Out: {{ attendee[4] if attendee[4] != 'Not Checked Out' else 'Not Checked Out' }}</p>
                         </div>
                     </div>
                 </div>

@@ -251,11 +251,10 @@
             <h2>User Master Data</h2>
             <!-- Error message box -->
             <div id="errorBox" class="alert alert-warning" style="display: none;"></div>
-            
             <form method="POST" action="/admin/user" id="userForm">
                 <input type="hidden" id="user_id" name="user_id">
                 <input type="hidden" id="role" name="role">
-    
+            
                 <!-- Employee Information -->
                 <div class="form-group">
                     <label for="first_name">First Name</label>
@@ -265,7 +264,7 @@
                     <label for="last_name">Last Name</label>
                     <input type="text" id="last_name" name="last_name" required>
                 </div>
-    
+            
                 <div class="form-group" id="gender_field">
                     <label for="gender">Gender</label>
                     <select id="gender" name="gender">
@@ -274,7 +273,8 @@
                         <option value="Other">Other</option>
                     </select>
                 </div>
-    
+            
+                <!-- Department Field -->
                 <div class="form-group" id="department_field">
                     <label for="department">Department</label>
                     <select id="department" name="department">
@@ -284,7 +284,7 @@
                         {% endfor %}
                     </select>
                 </div>
-    
+            
                 <!-- Lab and Shift Selection -->
                 <div class="form-group" id="lab_field">
                     <label for="lab">Lab</label>
@@ -295,7 +295,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                
+            
                 <div class="form-group" id="shift_field">
                     <label for="shift">Shift</label>
                     <select id="shift" name="shift">
@@ -303,8 +303,8 @@
                         <!-- This will be populated dynamically -->
                     </select>
                 </div>
-                
-                
+            
+                <!-- Username and Password Fields (Always required) -->
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required>
@@ -313,10 +313,10 @@
                     <label for="password">Password</label>
                     <input type="text" id="password" name="password" required>
                 </div>
-    
+            
                 <button type="submit" class="btn save-btn" id="saveButton">Save</button>
                 <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
-            </form>            
+            </form>       
         </div>
     </div>
     <!-- Modal for selecting user type -->
@@ -496,6 +496,179 @@ userModal.style.display = "block"; // Hide the user type selection modal
 });
 
 
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    var userModal = document.getElementById("userModal");
+    var userTypeModal = document.getElementById("userTypeModal");
+    var userIdInput = document.getElementById("user_id");
+    var firstNameInput = document.getElementById("first_name");
+    var lastNameInput = document.getElementById("last_name");
+    var departmentInput = document.getElementById("department");
+    var labInput = document.getElementById("lab");
+    var shiftInput = document.getElementById("shift");
+    var genderInput = document.getElementById("gender");
+    var usernameInput = document.getElementById("username");
+    var roleInput = document.getElementById("role");
+    var passwordInput = document.getElementById("password");
+
+    window.showAddUserOptions = function () {
+        userTypeModal.style.display = "flex";
+        userModal.style.display = "none"; // Show the user type selection modal
+    };
+
+    window.showAddUserForm = function (role) {
+        userIdInput.value = '';
+        firstNameInput.value = '';
+        lastNameInput.value = '';
+        departmentInput.value = '';
+        labInput.value = '';
+        shiftInput.value = '';
+        genderInput.value = 'Male';
+        usernameInput.value = '';
+        roleInput.value = role; // Set role as per the selection (admin or employee)
+        passwordInput.value = '';
+
+        if (role === 'admin') {
+            departmentInput.required = false;
+            document.getElementById('first_name_field').style.display = 'block';
+            document.getElementById('last_name_field').style.display = 'block';
+            document.getElementById('department_field').style.display = 'none';
+            document.getElementById('lab_field').style.display = 'none';
+            document.getElementById('shift_field').style.display = 'none';
+            document.getElementById('gender_field').style.display = 'none';
+
+            // Remove required attribute for hidden fields
+            firstNameInput.required = true;
+            lastNameInput.required = true;
+            departmentInput.required = false;
+            labInput.required = false;
+            shiftInput.required = false;
+            genderInput.required = false;
+        } else {
+            departmentInput.required = true;
+            document.getElementById('first_name_field').style.display = 'block';
+            document.getElementById('last_name_field').style.display = 'block';
+            document.getElementById('department_field').style.display = 'block';
+            document.getElementById('lab_field').style.display = 'block';
+            document.getElementById('shift_field').style.display = 'block';
+            document.getElementById('gender_field').style.display = 'block';
+
+            // Add required attribute for visible fields
+            firstNameInput.required = true;
+            lastNameInput.required = true;
+            departmentInput.required = true;
+            labInput.required = true;
+            shiftInput.required = true;
+            genderInput.required = true;
+        }
+        userTypeModal.style.display = "none";
+        userModal.style.display = "block"; // Show the add user modal
+    };
+
+    window.closeUserTypeModal = function () {
+        userTypeModal.style.display = "none"; // Hide the user type selection modal
+    };
+
+    window.editUser = function (id, first_name, last_name, username, password, role, gender, department, shift, lab) {
+        userIdInput.value = id;
+        usernameInput.value = username;
+        roleInput.value = role;
+        passwordInput.value = password;
+
+        if (role === 'employee' && id) {
+            // Editing an existing employee
+            document.getElementById('first_name_field').style.display = 'none';
+            document.getElementById('last_name_field').style.display = 'none';
+            document.getElementById('department_field').style.display = 'none';
+            document.getElementById('lab_field').style.display = 'none';
+            document.getElementById('shift_field').style.display = 'none';
+            document.getElementById('gender_field').style.display = 'none';
+
+            firstNameInput.required = false;
+            lastNameInput.required = false;
+            departmentInput.required = false;
+            labInput.required = false;
+            shiftInput.required = false;
+            genderInput.required = false;
+
+            document.getElementById('username_field').style.display = 'block';
+            document.getElementById('password_field').style.display = 'block';
+        }
+
+        userModal.style.display = "flex"; // Show the modal
+    };
+
+    window.closeModal = function () {
+        userModal.style.display = "none"; // Hide the modal
+    };
+
+    window.onclick = function (event) {
+        if (event.target === userModal) {
+            userModal.style.display = "none";
+        } else if (event.target === userTypeModal) {
+            userTypeModal.style.display = "none";
+        }
+    };
+
+    setTimeout(function () {
+        const errorMessageBox = document.getElementById('errorMessageBox');
+        if (errorMessageBox) {
+            errorMessageBox.style.display = 'none';
+        }
+    }, 5000);
+
+    if (document.getElementById('lab')) {
+        document.getElementById('lab').addEventListener('change', function () {
+            const labName = this.value;
+
+            if (!labName) {
+                document.getElementById('shift').innerHTML = '<option value="">Select Shift</option>';
+                return;
+            }
+
+            fetch(`/admin/shifts/getshift?lab_name=${labName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const shiftSelect = document.getElementById('shift');
+                    shiftSelect.innerHTML = '<option value="">Select Shift</option>';
+
+                    data.forEach(shift => {
+                        const option = document.createElement('option');
+                        option.value = shift.id;
+                        option.textContent = `${shift.days} - ${shift.start_time} to ${shift.end_time}`;
+                        shiftSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching shifts:', error));
+        });
+    }
+
+    $('#userForm').submit(function (event) {
+        if (roleInput.value === 'employee') {  // Validate department and shift for all employees, not just new ones
+            if (!departmentInput.value) {
+                alert("Department is required for employees.");
+                event.preventDefault();
+                return;
+            }
+            if (!shiftInput.value) {
+                alert("Shift is required for employees.");
+                event.preventDefault();
+                return;
+            }
+        }
+    });
+});
 
 
     </script>

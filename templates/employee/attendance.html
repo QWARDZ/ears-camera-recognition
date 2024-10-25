@@ -6,6 +6,17 @@
     <link rel="icon" type="image/x-icon" href="/static/images/logo.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/employee/attendance.css') }}">
     <title>Employee Attendance</title>
+    <style>
+        /* Adjust the size of the profile picture */
+.user-profile img.profile-pic {
+    width: 120px; /* Adjust to a smaller width */
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px; /* Add some spacing below the profile pic */
+}
+
+    </style>
 </head>
 <body>
 
@@ -14,6 +25,13 @@
     <div class="main-container">
         <h1>Attendance Form</h1>
 
+        <!-- Profile Section -->
+        <div class="user-profile">
+            <img src="{{ url_for('static', filename='uploads/' + (user_data[2] if user_data[2] else 'default_profile.png')) }}" alt="Profile Picture" class="profile-pic">
+            <!-- <p class="user-name">{{ user_data[0] }} {{ user_data[1] }}</p> -->
+        </div>
+
+        <!-- Attendance Message Section -->
         <p class="message">
             {% if already_checked_out %}
                 Thank you for your hard work today! See you tomorrow.
@@ -23,11 +41,12 @@
                 Please check in to start your attendance for today.
             {% endif %}
         </p>
-    
+
+        <!-- Attendance Form -->
         {% if not already_checked_out %}
         <form method="POST" action="/employee/attendance">
             <input type="hidden" name="action" value="{{ 'time_out' if already_checked_in else 'time_in' }}">
-            <button type="submit" class="attendance-button {{ 'time-out' if already_checked_in }}">
+            <button type="submit" class="attendance-button {{ 'time-out' if already_checked_in else 'time-in' }}">
                 {% if already_checked_in %}
                     Check Out
                 {% else %}
@@ -38,15 +57,15 @@
         {% endif %}
 
         {% if already_checked_out %}
-            <p class="thank-you-message">You have checked out successfully</p>
+            <p class="thank-you-message">You have checked out successfully.</p>
         {% endif %}
 
-        {% if already_checked_in %}
+        <!-- {% if already_checked_in %}
             <p class="encouragement-message">Keep up the great work! You're doing amazing.</p>
-        {% endif %}
+        {% endif %} -->
 
-        <!-- Small Clock at the Bottom -->
-        <div id="clock" class="clock-wrapper small-clock">
+        <!-- Small Clock -->
+        <div id="clock" class="small-clock">
             <div class="clock-section">
                 <span id="day" class="time-unit small"></span>
                 <span class="label">Day</span>
@@ -73,27 +92,22 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-    
-    <!-- JavaScript for Clock in 12-Hour Format with Philippines Time (GMT+8) -->
+    <!-- JavaScript for the real-time clock -->
     <script>
 
                 // Sidebar Toggle
-        const sidebar = document.querySelector('.sidebar');
+                const sidebar = document.querySelector('.sidebar');
         const toggleBtn = document.querySelector('.toggle-btn');
         const mainContainer = document.querySelector('.main-container');
 
         toggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('active');
             if (sidebar.classList.contains('active')) {
-                mainContainer.style.marginLeft = '570px'; /* Adjust margin when sidebar expands */
+                mainContainer.style.marginLeft = '600px'; /* Adjust margin when sidebar expands */
             } else {
-                mainContainer.style.marginLeft = '570px'; /* Default margin */
+                mainContainer.style.marginLeft = '600px'; /* Default margin */
             }
         });
-
-
 
         function updateClock() {
             const now = new Date();
@@ -116,7 +130,7 @@
         }
 
         setInterval(updateClock, 1000);
-        updateClock(); // Initial call to display clock immediately
+        updateClock(); // Initial call to display the clock immediately
     </script>
 
 </body>
