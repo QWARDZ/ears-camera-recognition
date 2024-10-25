@@ -1,3 +1,4 @@
+/* General Styling */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f7f9;
@@ -6,68 +7,126 @@ body {
     color: #333;
 }
 
+/* Main container */
 .main-container {
-    max-width: 800px;
-    margin-left: 600px;
-    margin-top: 140px;
-    background-color: #d8d8d8;
+    max-width: 600px;
+    margin: 100px auto;
+    background-color: #ffffff;
     padding: 30px;
-    border-radius: 5px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
-    transition: margin-left 0.5s ease;
 }
 
+/* Header */
 h1 {
-    margin-bottom: 30px;
-    font-size: 36px;
-    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #333;
     font-weight: bold;
 }
 
-.message {
-    margin-bottom: 30px;
-    font-size: 20px;
-    line-height: 1.6;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: #f0f4f7;
-    border: 1px solid #e0e0e0;
+/* Profile Picture Section */
+.user-profile {
+    margin-bottom: 20px;
 }
 
+.user-profile img.profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #3498db;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Message Section */
+.message {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #eaf1f8;
+    border-radius: 8px;
+    border: 1px solid #3498db;
+}
+
+/* Camera Section */
+#camera-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#camera-section video {
+    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+#capture {
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#capture:hover {
+    background-color: #2980b9;
+}
+
+/* Loader */
+.loader {
+    border: 5px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 5px solid #3498db;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin: 10px auto;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Attendance Form */
 .attendance-button {
-    display: inline-block;
-    padding: 15px 40px;
-    font-size: 22px;
     background-color: #28a745;
     color: #fff;
+    font-size: 18px;
+    padding: 10px 30px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
 }
 
 .attendance-button:hover {
     background-color: #218838;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.attendance-button:active {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.attendance-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
-.time-out {
-    background-color: #dc3545;
-}
-
-.time-out:hover {
-    background-color: #c82333;
-}
-
-.thank-you-message, .encouragement-message {
+/* Thank You Message */
+.thank-you-message {
     margin-top: 20px;
-    font-size: 20px;
+    font-size: 18px;
     color: #555;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
 }
 
 /* Small Clock Styling */

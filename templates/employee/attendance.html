@@ -2,136 +2,371 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="/static/images/logo.png">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/employee/attendance.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Attendance</title>
     <style>
-        /* Adjust the size of the profile picture */
-.user-profile img.profile-pic {
-    width: 120px; /* Adjust to a smaller width */
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 20px; /* Add some spacing below the profile pic */
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Main container */
+        .main-container {
+            max-width: 600px;
+            margin: 100px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* Header */
+        h1 {
+            margin-bottom: 20px;
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Profile Picture Section */
+        .user-profile {
+            margin-bottom: 20px;
+        }
+
+        .user-profile img.profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #3498db;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Message Section */
+        .message {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #eaf1f8;
+            border-radius: 8px;
+            border: 1px solid #3498db;
+        }
+
+        /* Camera Section */
+        #camera-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #camera-section video {
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 15px auto;
+            display: block;
+        }
+
+        #capture {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #capture:hover {
+            background-color: #2980b9;
+        }
+
+        /* Loader */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 10px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Attendance Form */
+        .attendance-button {
+            background-color: #28a745;
+            color: #fff;
+            font-size: 18px;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .attendance-button:hover {
+            background-color: #218838;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .attendance-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Notification Section */
+        .notification {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .notification.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Button to Start Camera */
+        #start-camera-btn {
+            background-color: #3498db;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #start-camera-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Wrapper for Start Camera Button to center it */
+.button-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
 }
 
     </style>
 </head>
 <body>
-
     {% include 'layout/employee_nav.html' %}
 
     <div class="main-container">
         <h1>Attendance Form</h1>
 
-        <!-- Profile Section -->
+        <!-- Profile Picture Section -->
         <div class="user-profile">
-            <img src="{{ url_for('static', filename='uploads/' + (user_data[2] if user_data[2] else 'default_profile.png')) }}" alt="Profile Picture" class="profile-pic">
-            <!-- <p class="user-name">{{ user_data[0] }} {{ user_data[1] }}</p> -->
+            <img src="{{ url_for('static', filename='uploads/' + user_profile_picture) if user_profile_picture else '/static/uploads/default_profile.png' }}"
+                alt="Profile Picture" class="profile-pic">
         </div>
 
-        <!-- Attendance Message Section -->
-        <p class="message">
+        <!-- Message Section -->
+        <p class="message" id="attendance-message">
             {% if already_checked_out %}
-                Thank you for your hard work today! See you tomorrow.
+            Thank you for your hard work today! See you tomorrow.
             {% elif already_checked_in %}
-                You are already checked in. Please check out when you finish.
+            Please verify your face to check out.
             {% else %}
-                Please check in to start your attendance for today.
+            Please verify your face to check in.
             {% endif %}
         </p>
 
-        <!-- Attendance Form -->
-        {% if not already_checked_out %}
-        <form method="POST" action="/employee/attendance">
+<!-- Button to Start Camera -->
+<div class="button-wrapper">
+    <button id="start-camera-btn" {% if already_checked_out %}style="display: none;"{% endif %}>Start Camera</button>
+</div>
+
+        <!-- Camera Section (initially hidden) -->
+        <div id="camera-section" style="display:none;">
+            <h2>Verify Your Face</h2>
+            <video id="video" width="320" height="240" autoplay></video>
+            <button id="capture" disabled>Loading Camera...</button>
+            <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+            <div class="loader" id="loader"></div>
+        </div>
+
+        <!-- Attendance Form (hidden initially) -->
+        <form method="POST" action="/employee/attendance" id="attendance-form" style="display:none;">
             <input type="hidden" name="action" value="{{ 'time_out' if already_checked_in else 'time_in' }}">
-            <button type="submit" class="attendance-button {{ 'time-out' if already_checked_in else 'time-in' }}">
+            <button type="submit" class="attendance-button {{ 'time-out' if already_checked_in else 'time-in' }}"
+                id="attendance-button">
                 {% if already_checked_in %}
-                    Check Out
+                Check Out
                 {% else %}
-                    Check In
+                Check In
                 {% endif %}
             </button>
         </form>
-        {% endif %}
 
-        {% if already_checked_out %}
-            <p class="thank-you-message">You have checked out successfully.</p>
-        {% endif %}
-
-        <!-- {% if already_checked_in %}
-            <p class="encouragement-message">Keep up the great work! You're doing amazing.</p>
-        {% endif %} -->
-
-        <!-- Small Clock -->
-        <div id="clock" class="small-clock">
-            <div class="clock-section">
-                <span id="day" class="time-unit small"></span>
-                <span class="label">Day</span>
-            </div>
-            <div class="colon">:</div>
-            <div class="clock-section">
-                <span id="hours" class="time-unit small"></span>
-                <span class="label">Hours</span>
-            </div>
-            <div class="colon">:</div>
-            <div class="clock-section">
-                <span id="minutes" class="time-unit small"></span>
-                <span class="label">Minutes</span>
-            </div>
-            <div class="colon">:</div>
-            <div class="clock-section">
-                <span id="seconds" class="time-unit small"></span>
-                <span class="label">Seconds</span>
-            </div>
-            <div class="colon">:</div>
-            <div class="clock-section">
-                <span id="ampm" class="time-unit small"></span>
-            </div>
-        </div>
+        <!-- Notification Section -->
+        <div class="notification" id="notification"></div>
     </div>
 
-    <!-- JavaScript for the real-time clock -->
     <script>
+        let videoStream;
 
-                // Sidebar Toggle
-                const sidebar = document.querySelector('.sidebar');
-        const toggleBtn = document.querySelector('.toggle-btn');
-        const mainContainer = document.querySelector('.main-container');
-
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            if (sidebar.classList.contains('active')) {
-                mainContainer.style.marginLeft = '600px'; /* Adjust margin when sidebar expands */
-            } else {
-                mainContainer.style.marginLeft = '600px'; /* Default margin */
-            }
+        // Start Camera Logic
+        document.getElementById('start-camera-btn').addEventListener('click', function () {
+            document.getElementById('camera-section').style.display = 'block';
+            document.getElementById('start-camera-btn').style.display = 'none';
+            startCamera();
         });
 
-        function updateClock() {
-            const now = new Date();
-            const days = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-            const day = days[now.getDay()];
+        function startCamera() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const captureButton = document.getElementById('capture');
+            const attendanceForm = document.getElementById('attendance-form');
+            const loader = document.getElementById('loader');
+            const notification = document.getElementById('notification');
 
-            let hours = now.getUTCHours() + 8; // Philippines Time (GMT+8)
-            if (hours >= 24) hours -= 24; // Adjust for overflow
+            navigator.mediaDevices.getUserMedia({
+                video: true
+            }).then(stream => {
+                videoStream = stream;
+                video.srcObject = stream;
+                captureButton.disabled = false;
+                captureButton.textContent = 'Capture';
+            }).catch(err => {
+                alert('Unable to access camera: ' + err.message);
+                captureButton.textContent = 'Camera Unavailable';
+            });
 
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; // Convert to 12-hour format
+            captureButton.addEventListener('click', function () {
+                loader.style.display = 'block';
+                captureButton.disabled = true;
+                captureButton.textContent = 'Verifying...';
 
-            document.getElementById('day').textContent = day;
-            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-            document.getElementById('minutes').textContent = minutes;
-            document.getElementById('seconds').textContent = seconds;
-            document.getElementById('ampm').textContent = ampm;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataURL = canvas.toDataURL('image/jpeg');
+
+                fetch('/verify_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image: dataURL
+                    })
+                }).then(response => response.json())
+                    .then(data => {
+                        loader.style.display = 'none';
+                        captureButton.disabled = false;
+                        captureButton.textContent = 'Capture';
+
+                        if (data.success) {
+                            notification.innerHTML = '<div class="notification success">Face verified successfully!</div>';
+                            document.getElementById('camera-section').style.display = 'none'; // Hide camera
+                            attendanceForm.style.display = 'block'; // Show form
+                            stopCamera(); // Stop the camera stream
+
+
+                            // Set a timeout to hide the notification after 5 seconds
+                            setTimeout(function() {
+                                notification.innerHTML = ''; // Remove the notification content
+                            }, 5000); // 5000 milliseconds = 5 seconds
+                        } else {
+                            notification.innerHTML = '<div class="notification error">' + data.message + '</div>';
+                        }
+                    }).catch(err => {
+                        alert('Error verifying face');
+                        loader.style.display = 'none';
+                        captureButton.disabled = false;
+                        captureButton.textContent = 'Capture';
+                    });
+            });
         }
 
-        setInterval(updateClock, 1000);
-        updateClock(); // Initial call to display the clock immediately
-    </script>
+        // Function to stop the camera stream
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+        }
+        
 
+
+        document.getElementById('attendance-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent the form from reloading the page
+
+    const formData = new FormData(this);
+    const actionValue = formData.get('action');
+
+    fetch('/employee/attendance', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the message dynamically
+            const attendanceMessage = document.getElementById('attendance-message');
+            const attendanceButton = document.getElementById('attendance-button');
+            const startCameraButton = document.getElementById('start-camera-btn');
+            const cameraSection = document.getElementById('camera-section');
+
+            // Update message based on next action
+            if (data.next_action === 'time_out') {
+                attendanceMessage.textContent = 'Please verify your face to check out.';
+                attendanceButton.textContent = 'Check Out';
+                attendanceButton.value = 'time_out';
+                startCameraButton.style.display = 'block'; // Show the Start Camera button
+                attendanceButton.style.display = 'none'; // Hide the Check Out button until camera verification
+            } else if (data.next_action === 'time_in') {
+                attendanceMessage.textContent = 'Thank you for your hard work today! See you tomorrow.';
+                startCameraButton.textContent = 'Start Camera'; // Reset to Start Camera
+                startCameraButton.style.display = 'none'; // Hide the Start Camera button
+                attendanceButton.style.display = 'none'; // Hide the Check In button after check-out
+                cameraSection.style.display = 'none'; // Hide the camera section after checkout
+                stopCamera(); // Stop the camera stream
+            }
+
+            // Optionally hide the form after checking out
+            if (actionValue === 'time_out') {
+                document.getElementById('attendance-form').style.display = 'none';
+            }
+
+        } else {
+            // Show the error message
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+
+    </script>
 </body>
+
 </html>

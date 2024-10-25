@@ -80,7 +80,7 @@ body {
 }
 
 button {
-    width: 103%;
+    width: 100%; /* Updated to 100% */
     padding: 12px 0;
     background: #007bff;
     color: #fff;
@@ -89,6 +89,8 @@ button {
     font-size: 18px;
     cursor: pointer;
     transition: background 0.3s ease;
+    position: relative;  /* Add relative position */
+    z-index: 10;         /* Ensure button is clickable */
 }
 
 button:hover {
