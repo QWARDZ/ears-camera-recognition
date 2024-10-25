@@ -525,69 +525,67 @@ class EmployeeAttendance:
                 """)
                 users = cur.fetchall()
 
-                # Fetch department details for dropdown
+                # Fetch department and lab details for dropdowns
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
 
-                # Fetch lab details for dropdown
                 cur.execute("SELECT DISTINCT lab_name FROM shifts")
                 labs = [lab[0] for lab in cur.fetchall()]
 
-                # Handle form submission and fetch shifts if lab is selected
-                shifts = []
-                lab_name = request.form.get('lab') or request.args.get('lab_name')
-                if lab_name:
-                    cur.execute("SELECT id, days, start_time, end_time FROM shifts WHERE lab_name = %s ORDER BY days", [lab_name])
-                    shifts = cur.fetchall()
-
+                # Handle form submission
                 error_message = None
-
                 if request.method == 'POST':
-                    # Handle form submission for adding/updating user
                     user_id = request.form.get('user_id')
                     first_name = request.form['first_name']
                     last_name = request.form['last_name']
-                    # Safely retrieve department and other employee-related fields
                     department = request.form.get('department') if request.form.get('role') == 'employee' else None
                     shift = request.form.get('shift') if request.form.get('role') == 'employee' else None
                     gender = request.form.get('gender') if request.form.get('role') == 'employee' else None
                     username = request.form['username']
                     role = request.form['role']
                     password = request.form['password']
+                    profile_picture = request.files.get('profile_picture')
 
-                    # Check if the selected shift is already full
-                    if role == 'employee' and shift:
-                        cur.execute("SELECT COUNT(*) FROM employees WHERE shift = %s", [shift])
-                        employee_count = cur.fetchone()[0]
-
-                        if employee_count >= 2:
-                            # If shift is full, show an error message
-                            error_message = "Shift is already full. Please select a different shift."
-                            cur.close()
-                            conn.close()
-                            return render_template('admin/user.html', users=users, departments=departments, labs=labs, shifts=shifts, user_data=user_data, error_message=error_message)
+                    # Handling profile picture upload
+                    profile_picture_filename = None
+                    if profile_picture and allowed_file(profile_picture.filename):
+                        filename = secure_filename(profile_picture.filename)
+                        filepath = os.path.join(self.app.config['UPLOAD_FOLDER'], filename)
+                        profile_picture.save(filepath)  # Save the file to the uploads directory
+                        profile_picture_filename = filename
 
                     # Update existing user
                     if user_id:
+                        if profile_picture_filename:
+                            cur.execute("""
+                                UPDATE employees 
+                                SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s, profile_picture=%s 
+                                WHERE id=%s
+                            """, (first_name, last_name, department, shift, gender, profile_picture_filename, user_id))
+                        else:
+                            cur.execute("""
+                                UPDATE employees 
+                                SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s 
+                                WHERE id=%s
+                            """, (first_name, last_name, department, shift, gender, user_id))
+                        
+                        # Also update user account
                         cur.execute("""
-                            UPDATE employees SET first_name=%s, last_name=%s, department=%s, shift=%s, gender=%s
-                            WHERE id=%s
-                        """, (first_name, last_name, department, shift, gender, user_id))
-                        cur.execute("""
-                            UPDATE users SET username=%s, password=%s, role=%s
-                            WHERE id=%s
+                            UPDATE users SET username=%s, password=%s, role=%s WHERE id=%s
                         """, (username, password, role, user_id))
                     else:
-                        # Add new user
+                        # Insert new employee
                         cur.execute("""
-                            INSERT INTO employees (first_name, last_name, department, shift, gender)
-                            VALUES (%s, %s, %s, %s, %s)
-                        """, (first_name, last_name, department, shift, gender))
+                            INSERT INTO employees (first_name, last_name, department, shift, gender, profile_picture)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                        """, (first_name, last_name, department, shift, gender, profile_picture_filename))
+
                         cur.execute("SELECT LAST_INSERT_ID()")
                         new_employee_id = cur.fetchone()[0]
 
+                        # Insert new user
                         cur.execute("""
-                            INSERT INTO users (username, password, role, employee_id)
+                            INSERT INTO users (username, password, role, employee_id) 
                             VALUES (%s, %s, %s, %s)
                         """, (username, password, role, new_employee_id))
 
@@ -599,10 +597,15 @@ class EmployeeAttendance:
 
                 cur.close()
                 conn.close()
-                return render_template('admin/user.html', users=users, departments=departments, labs=labs, shifts=shifts, selected_lab=lab_name, user_data=user_data, error_message=error_message)
+                return render_template('admin/user.html', users=users, departments=departments, labs=labs, user_data=user_data, error_message=error_message)
 
             else:
                 return redirect('/login')
+
+        def allowed_file(filename):
+            ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+            return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 
         # Route to check if the shift is full
@@ -838,6 +841,8 @@ class EmployeeAttendance:
                 return redirect('/admin/attendance')
             else:
                 return redirect('/login')
+            
+#--------------
 
         # Route to delete an attendance record
         @self.app.route('/admin/attendance/delete/<int:attendance_id>', methods=['POST'])
@@ -858,6 +863,8 @@ class EmployeeAttendance:
                 return redirect('/admin/attendance')
             else:
                 return redirect('/login')
+            
+#---------------
 
         # Route to calculate total hours rendered by an employee
         @self.app.route('/admin/attendance/calculate', methods=['POST'])
@@ -1103,65 +1110,9 @@ class EmployeeAttendance:
                     return redirect('/login')
             else:
                 return redirect('/login')
-
-
-
-        @self.app.route('/employee/profile/upload', methods=['POST'])
-        def upload_profile_picture():
-            if 'username' in session and session['role'] == 'employee':
-                conn = self.get_db_connection()  # Open database connection
-                cur = conn.cursor()
-
-                # Fetch employee ID from the session data
-                cur.execute("SELECT employee_id FROM users WHERE username = %s", [session['username']])
-                result = cur.fetchone()
-
-                if result is None:
-                    flash("User not found.", "danger")
-                    return redirect('/login')
-
-                employee_id = result[0]
-
-                # Check if the file is present in the request
-                if 'profile_picture' not in request.files:
-                    flash('No file part', 'danger')
-                    return redirect(request.url)
-
-                file = request.files['profile_picture']
-
-                # Check if a file was selected
-                if file.filename == '':
-                    flash('No selected file', 'danger')
-                    return redirect(request.url)
-
-                # Check if the uploaded file is allowed and process it
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    filepath = os.path.join(self.app.config['UPLOAD_FOLDER'], filename)
-                    file.save(filepath)  # Save the file to the uploads directory
-
-                    # Update employee profile picture in the database
-                    cur.execute("""
-                        UPDATE employees SET profile_picture = %s WHERE id = %s
-                    """, (filename, employee_id))
-                    conn.commit()
-
-                    flash('Profile picture uploaded successfully!', 'success')
-                    return redirect('/employee/profile')
-
-                flash('Invalid file format. Allowed formats are png, jpg, jpeg, gif.', 'danger')
-                return redirect('/employee/profile')
-
-            return redirect('/login')
-
-
-        def allowed_file(filename):
-            ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-            return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+            
+            
         
-        
-
-
 #---------------------------------------------------------------------------------
 
         @self.app.route('/employee/history', methods=['GET'])
@@ -1225,3 +1176,7 @@ class EmployeeAttendance:
 if __name__ == "__main__":
     x = EmployeeAttendance(__name__)
     x.run()
+
+
+
+

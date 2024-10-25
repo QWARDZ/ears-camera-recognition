@@ -246,79 +246,87 @@
             </table>
         </div>
     </div>
-    <div id="userModal" class="modal">
-        <div class="modal-content">
-            <h2>User Master Data</h2>
-            <!-- Error message box -->
-            <div id="errorBox" class="alert alert-warning" style="display: none;"></div>
-            <form method="POST" action="/admin/user" id="userForm">
-                <input type="hidden" id="user_id" name="user_id">
-                <input type="hidden" id="role" name="role">
-            
-                <!-- Employee Information -->
-                <div class="form-group">
-                    <label for="first_name">First Name</label>
-                    <input type="text" id="first_name" name="first_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="last_name">Last Name</label>
-                    <input type="text" id="last_name" name="last_name" required>
-                </div>
-            
-                <div class="form-group" id="gender_field">
-                    <label for="gender">Gender</label>
-                    <select id="gender" name="gender">
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-            
-                <!-- Department Field -->
-                <div class="form-group" id="department_field">
-                    <label for="department">Department</label>
-                    <select id="department" name="department">
-                        <option value="">Select Department</option>
-                        {% for department in departments %}
-                            <option value="{{ department[0] }}">{{ department[1] }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            
-                <!-- Lab and Shift Selection -->
-                <div class="form-group" id="lab_field">
-                    <label for="lab">Lab</label>
-                    <select id="lab" name="lab">
-                        <option value="">Select Lab</option>
-                        {% for lab_name in labs %}
-                            <option value="{{ lab_name }}" {% if selected_lab == lab_name %}selected{% endif %}>{{ lab_name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            
-                <div class="form-group" id="shift_field">
-                    <label for="shift">Shift</label>
-                    <select id="shift" name="shift">
-                        <option value="">Select Shift</option>
-                        <!-- This will be populated dynamically -->
-                    </select>
-                </div>
-            
-                <!-- Username and Password Fields (Always required) -->
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="text" id="password" name="password" required>
-                </div>
-            
-                <button type="submit" class="btn save-btn" id="saveButton">Save</button>
-                <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
-            </form>       
+
+        <!-- Modal for Add/Edit User -->
+        <div id="userModal" class="modal">
+            <div class="modal-content">
+                <h2>User Master Data</h2>
+                <form method="POST" action="/admin/user" enctype="multipart/form-data" id="userForm">
+                    <input type="hidden" id="user_id" name="user_id">
+                    <input type="hidden" id="role" name="role">
+                
+                    <!-- Employee Information -->
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" required>
+                    </div>
+    
+                    <!-- Gender Field -->
+                    <div class="form-group" id="gender_field">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+    
+                    <!-- Department Field -->
+                    <div class="form-group" id="department_field">
+                        <label for="department">Department</label>
+                        <select id="department" name="department">
+                            <option value="">Select Department</option>
+                            {% for department in departments %}
+                                <option value="{{ department[0] }}">{{ department[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+    
+                    <!-- Lab and Shift Selection -->
+                    <div class="form-group" id="lab_field">
+                        <label for="lab">Lab</label>
+                        <select id="lab" name="lab">
+                            <option value="">Select Lab</option>
+                            {% for lab_name in labs %}
+                                <option value="{{ lab_name }}" {% if selected_lab == lab_name %}selected{% endif %}>{{ lab_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+    
+                    <div class="form-group" id="shift_field">
+                        <label for="shift">Shift</label>
+                        <select id="shift" name="shift">
+                            <option value="">Select Shift</option>
+                        </select>
+                    </div>
+    
+                    <!-- Username and Password Fields -->
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="text" id="password" name="password" required>
+                    </div>
+
+                    <!-- Profile Picture Upload -->
+                    <div class="form-group">
+                        <label for="profile_picture">Upload Profile Picture</label>
+                        <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                    </div>
+                        
+    
+                    <button type="submit" class="btn save-btn" id="saveButton">Save</button>
+                    <button type="button" class="btn cancel-btn" onclick="closeModal()">Cancel</button>
+                </form>       
+            </div>
         </div>
-    </div>
+
     <!-- Modal for selecting user type -->
     <div id="userTypeModal" class="modal">
         <div class="modal-content">
