@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absent Employees</title>
+    <link rel="icon" type="image/x-icon" href="/static/images/logo.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/attendance.css') }}">
+</head>
+<body>
+
+    {% include 'layout/admin_nav.html' %}
+
+    <div class="main-container">
+
+        <!-- Filter Form with Department -->
+        <form class="filter-form" method="GET" action="/admin/absent">
+            <select name="department" onchange="this.form.submit()" required>
+                <option value="">Select Department</option>
+                <option value="all">All Departments</option>
+                {% for department in departments %}
+                    <option value="{{ department[0] }}">{{ department[1] }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <!-- Absent Employees Table -->
+        <table class="attendance-table" id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Department</th>
+                    <th>Shift Start</th>
+                    <th>Shift End</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in absent_records %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ record[0] }}</td> <!-- First Name -->
+                    <td>{{ record[1] }}</td> <!-- Last Name -->
+                    <td>{{ record[2] }}</td> <!-- Department -->
+                    <td>{{ record[3] }}</td> <!-- Shift Start Time -->
+                    <td>{{ record[4] }}</td> <!-- Shift End Time -->
+                    <td>{{ record[5] }}</td> <!-- Date of Absence -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

@@ -32,7 +32,7 @@ Unused py
         @self.app.route('/employee/profile/upload', methods=['POST'])
         def upload_profile_picture():
             if 'username' in session and session['role'] == 'employee':
-                conn = self.get_db_connection()  # Open database connection
+                conn = self.ears_db()  # Open database connection
                 cur = conn.cursor()
 
                 # Fetch employee ID from the session data
