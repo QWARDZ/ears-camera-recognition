@@ -139,6 +139,7 @@ class EmployeeAttendance:
         
 #-------------------------------------------------------------------------------------------
 
+        
 
         @self.app.route('/login', methods=['GET', 'POST'])
         def login():
@@ -155,7 +156,7 @@ class EmployeeAttendance:
                 if user:
                     session['username'] = username
                     session['role'] = user[1]
-                    session['employee_id'] = user[2]  # Make sure this is set to the correct employee_id
+                    session['employee_id'] = user[2]
 
                     if user[1] == 'admin':
                         return redirect('/admin/dashboard')
@@ -163,9 +164,10 @@ class EmployeeAttendance:
                         return redirect('/employee/attendance')
                 else:
                     flash("Invalid username or password", "danger")
-                    return render_template('layout/login.html')
+                    return redirect('/login')
             else:
                 return render_template('layout/login.html')
+
 
         @self.app.route('/logout')
         def logout():

@@ -60,62 +60,62 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script>
-        // Sidebar Toggle
-        const sidebar = document.querySelector('.sidebar');
-        const toggleBtn = document.querySelector('.toggle-btn');
-        const mainContainer = document.querySelector('.main-container');
+    // Sidebar Toggle
+    const sidebar = document.querySelector('.sidebar');
+    const toggleBtn = document.querySelector('.toggle-btn');
+    const mainContainer = document.querySelector('.main-container');
 
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            if (sidebar.classList.contains('active')) {
-                mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
-            } else {
-                mainContainer.style.marginLeft = '80px'; /* Default margin */
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        if (sidebar.classList.contains('active')) {
+            mainContainer.style.marginLeft = '260px'; /* Adjust margin when sidebar expands */
+        } else {
+            mainContainer.style.marginLeft = '80px'; /* Default margin */
+        }
+    });
+
+    function autoDeleteAttendanceRecord(shiftEnd) {
+    const shiftEndTime = new Date();
+    // Parse shiftEnd string in "HH:MM:SS" format
+    const [hours, minutes] = shiftEnd.split(':').map(Number);
+    shiftEndTime.setHours(hours);
+    shiftEndTime.setMinutes(minutes);
+    shiftEndTime.setSeconds(0);
+
+    // Add 20 minutes of overtime and 10 minutes of grace period
+    const allowedTime = new Date(shiftEndTime.getTime() + (10 + 10) * 60 * 1000); // 30 minutes in milliseconds
+
+    const currentTime = new Date();
+
+    if (currentTime > allowedTime) {
+        // Make an AJAX call to delete the record if the current time exceeds the allowed time
+        fetch('/employee/attendance/cleanup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             }
-        });
-
-        function autoDeleteAttendanceRecord(shiftEnd) {
-        const shiftEndTime = new Date();
-        // Parse shiftEnd string in "HH:MM:SS" format
-        const [hours, minutes] = shiftEnd.split(':').map(Number);
-        shiftEndTime.setHours(hours);
-        shiftEndTime.setMinutes(minutes);
-        shiftEndTime.setSeconds(0);
-
-        // Add 20 minutes of overtime and 10 minutes of grace period
-        const allowedTime = new Date(shiftEndTime.getTime() + (10 + 10) * 60 * 1000); // 30 minutes in milliseconds
-
-        const currentTime = new Date();
-
-        if (currentTime > allowedTime) {
-            // Make an AJAX call to delete the record if the current time exceeds the allowed time
-            fetch('/employee/attendance/cleanup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    alert(data.message); // Display the success message
-                    location.reload(); // Reload the page or redirect as needed
-                } else if (data.error) {
-                    alert(data.error); // Display any error messages
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message); // Display the success message
+                location.reload(); // Reload the page or redirect as needed
+            } else if (data.error) {
+                alert(data.error); // Display any error messages
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
+}
 
-    // Call this function when the page loads with the appropriate shift end time
-    window.onload = function() {
-        // Assuming shiftEnd is passed from the server-side template
-        const shiftEnd = "{{ shift_end }}"; // Replace with actual server-side value
-        if (shiftEnd) {
-            autoDeleteAttendanceRecord(shiftEnd);
-        }
+// Call this function when the page loads with the appropriate shift end time
+window.onload = function() {
+    // Assuming shiftEnd is passed from the server-side template
+    const shiftEnd = "{{ shift_end }}"; // Replace with actual server-side value
+    if (shiftEnd) {
+        autoDeleteAttendanceRecord(shiftEnd);
     }
+}
     </script>
 </body>
 </html>
