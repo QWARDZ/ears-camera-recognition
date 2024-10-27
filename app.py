@@ -20,7 +20,7 @@ class EmployeeAttendance:
         self.app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
         # Flask-Session config for server-side sessions
-        self.app.config['SESSION_TYPE'] = 'filesystem'  # Server-side sessions
+        self.app.config['SESSION_TYPE'] = 'filesystem' 
         self.app.config['SESSION_PERMANENT'] = True
         self.app.config['SESSION_USE_SIGNER'] = True
         Session(self.app)  # Initialize Flask-Session
@@ -131,7 +131,6 @@ class EmployeeAttendance:
                             return jsonify({"success": False, "message": "No face found in the captured image"})
 
                     except Exception as e:
-                        # Handle any exceptions during face processing
                         return jsonify({"success": False, "message": str(e)})
 
             return jsonify({"success": False, "message": "Unauthorized access"})
@@ -139,7 +138,7 @@ class EmployeeAttendance:
         
 #-------------------------------------------------------------------------------------------
 
-        
+            
 
         @self.app.route('/login', methods=['GET', 'POST'])
         def login():
@@ -171,9 +170,7 @@ class EmployeeAttendance:
 
         @self.app.route('/logout')
         def logout():
-            # Clear the session data
             session.clear()
-            # Redirect to the login page after logging out
             return redirect('/login')
 
 
@@ -279,7 +276,7 @@ class EmployeeAttendance:
         @self.app.route('/admin/departments', methods=['GET', 'POST'])
         def manage_departments():
             if 'username' in session and session['role'] == 'admin':
-                conn = self.ears_db()  # Use the connection function
+                conn = self.ears_db() 
                 cur = conn.cursor()
 
                 # Fetch user data for the admin dashboard top bar
@@ -296,11 +293,11 @@ class EmployeeAttendance:
                 
                 if request.method == 'POST':
                     department_id = request.form.get('department_id')
-                    department_name = request.form['department_name'].strip()  # Strip whitespace
+                    department_name = request.form['department_name'].strip()  
 
                     if department_id:  # If department_id exists, update existing department
                         cur.execute("UPDATE departments SET name = %s WHERE id = %s", (department_name, department_id))
-                    else:  # Otherwise, insert new department
+                    else:  
                         # Check if department name already exists
                         cur.execute("SELECT id FROM departments WHERE name = %s", [department_name])
                         existing_department = cur.fetchone()
@@ -417,7 +414,7 @@ class EmployeeAttendance:
                             VALUES (%s, %s, 'employee', %s)
                         """, (username, password, new_employee_id))
 
-                    conn.commit()  # Commit the changes
+                    conn.commit()
                     cur.close()
                     conn.close()
 
@@ -487,7 +484,7 @@ class EmployeeAttendance:
             
             # Ensure lab_name is not None or empty
             if not lab_name:
-                return jsonify([]), 400  # Return empty list and status 400 if lab_name is not provided
+                return jsonify([]), 400  
 
             # Query the shifts table to get shifts based on the selected lab
             conn = self.ears_db()
@@ -672,7 +669,7 @@ class EmployeeAttendance:
         @self.app.route('/admin/shifts', methods=['GET', 'POST'])
         def manage_shifts():
             if 'username' in session and session['role'] == 'admin':
-                conn = self.ears_db()  # Open connection to the database
+                conn = self.ears_db()  
                 cur = conn.cursor()
 
                 # Fetch user data
@@ -704,9 +701,9 @@ class EmployeeAttendance:
                         cur.execute("INSERT INTO shifts (start_time, end_time, lab_name, days) VALUES (%s, %s, %s, %s)", 
                                     (start_time, end_time, lab_name, days))
 
-                    conn.commit()  # Commit the changes to the database
-                    cur.close()  # Close the cursor
-                    conn.close()  # Close the database connection
+                    conn.commit() 
+                    cur.close() 
+                    conn.close()  
                     return redirect('/admin/shifts')
 
                 # Fetch shifts and group them by lab_name and days
@@ -717,13 +714,13 @@ class EmployeeAttendance:
                 cur.execute("SELECT DISTINCT lab_name FROM shifts")
                 lab_names = [row[0] for row in cur.fetchall()]
                 cur.close()
-                conn.close()  # Close the database connection after fetching data
+                conn.close() 
 
                 # Group shifts by lab and then by day
                 shifts_by_lab = {}
                 for shift in shifts:
-                    lab = shift[3]  # Lab name
-                    day = shift[4]  # Day of the week
+                    lab = shift[3] 
+                    day = shift[4]  
 
                     if lab not in shifts_by_lab:
                         shifts_by_lab[lab] = {}
@@ -741,15 +738,15 @@ class EmployeeAttendance:
         @self.app.route('/admin/shifts/delete/<int:shift_id>', methods=['POST'])
         def delete_shift(shift_id):
             if 'username' in session and session['role'] == 'admin':
-                conn = self.ears_db()  # Open the connection
+                conn = self.ears_db()
                 cur = conn.cursor()
                 
                 # Execute the deletion query
                 cur.execute("DELETE FROM shifts WHERE id = %s", [shift_id])
-                conn.commit()  # Commit the deletion
+                conn.commit() 
 
-                cur.close()  # Close the cursor
-                conn.close()  # Close the connection
+                cur.close() 
+                conn.close()
                 
                 flash("Shift deleted successfully", "success")
                 return redirect('/admin/shifts')
@@ -763,7 +760,7 @@ class EmployeeAttendance:
         @self.app.route('/admin/attendance', methods=['GET'])
         def attendance_report():
             if 'username' in session and session['role'] == 'admin':
-                conn = self.ears_db()  # Establish connection
+                conn = self.ears_db() 
                 cur = conn.cursor()
 
                 # Fetch user data for the top bar
@@ -778,7 +775,7 @@ class EmployeeAttendance:
                 cur.execute("SELECT id, name FROM departments")
                 departments = cur.fetchall()
 
-                department = request.args.get('department')  # Get selected department filter
+                department = request.args.get('department')
 
                 query = """
                     SELECT 
@@ -810,8 +807,8 @@ class EmployeeAttendance:
                 cur.execute(query, params)
                 attendance_records = cur.fetchall()
 
-                cur.close()  # Close the cursor
-                conn.close()  # Close the connection
+                cur.close()  
+                conn.close() 
 
                 return render_template('/admin/attendance.html', 
                                     departments=departments, 
@@ -824,7 +821,7 @@ class EmployeeAttendance:
         @self.app.route('/admin/attendance/update', methods=['POST'])
         def update_attendance():
             if 'username' in session and session['role'] == 'admin':
-                conn = self.ears_db()  # Establish connection
+                conn = self.ears_db() 
                 cur = conn.cursor()
 
                 attendance_id = request.form['attendance_id']
@@ -840,10 +837,10 @@ class EmployeeAttendance:
                     WHERE id = %s
                 """
                 cur.execute(query, (check_in, check_out, status_in, status_out, attendance_id))
-                conn.commit()  # Commit the changes
+                conn.commit() 
 
-                cur.close()  # Close the cursor
-                conn.close()  # Close the connection
+                cur.close()  
+                conn.close() 
 
                 flash('Attendance record updated successfully!', 'success')
                 return redirect('/admin/attendance')
@@ -855,16 +852,16 @@ class EmployeeAttendance:
         @self.app.route('/admin/attendance/delete/<int:attendance_id>', methods=['POST'])
         def delete_attendance(attendance_id):
             if 'username' in session and session['role'] == 'admin':
-                conn = self.ears_db()  # Establish connection
+                conn = self.ears_db()
                 cur = conn.cursor()
 
                 # Execute delete query
                 query = "DELETE FROM attendance WHERE id = %s"
                 cur.execute(query, [attendance_id])
-                conn.commit()  # Commit the changes
+                conn.commit() 
 
-                cur.close()  # Close the cursor
-                conn.close()  # Close the connection
+                cur.close()
+                conn.close()
 
                 flash('Attendance record deleted successfully!', 'success')
                 return redirect('/admin/attendance')
@@ -881,7 +878,7 @@ class EmployeeAttendance:
                 # Split the employee name into first name and last name
                 first_name, last_name = employee_name.split()
 
-                conn = self.ears_db()  # Establish connection
+                conn = self.ears_db()  
                 cur = conn.cursor()
 
                 # Get the employee ID based on the first and last name
@@ -899,15 +896,15 @@ class EmployeeAttendance:
                     """, [employee_id])
                     hours_data = cur.fetchall()
 
-                    total_hours = timedelta()  # Initialize total hours
+                    total_hours = timedelta() 
                     for row in hours_data:
                         duty_hours = row[0]
                         if duty_hours:
                             h, m, s = map(int, str(duty_hours).split(':'))
                             total_hours += timedelta(hours=h, minutes=m, seconds=s)
 
-                    cur.close()  # Close the cursor
-                    conn.close()  # Close the connection
+                    cur.close()  
+                    conn.close() 
 
                     # Return the total hours as a JSON response
                     return jsonify({'total_hours': str(total_hours)})
@@ -987,14 +984,14 @@ class EmployeeAttendance:
                 return jsonify({"success": False, "message": f"Error converting shift times: {e}"}), 500
 
             # Ensure the shift times are of type time
-            today = datetime.now().date()  # Get today's date
-            shift_start_time = datetime.combine(today, shift_start_time)  # Combine date with shift start time
-            shift_end_time = datetime.combine(today, shift_end_time)  # Combine date with shift end time
+            today = datetime.now().date()  
+            shift_start_time = datetime.combine(today, shift_start_time)  
+            shift_end_time = datetime.combine(today, shift_end_time) 
 
             if request.method == 'POST':
                 action = request.form['action']
 
-                # Get the current datetime
+      
                 current_time = datetime.now()
 
                 if action == 'time_in':
@@ -1047,7 +1044,7 @@ class EmployeeAttendance:
                     already_checked_in=already_checked_in,
                     already_checked_out=already_checked_out,
                     user_profile_picture=user_data[2] if user_data[2] else 'default_profile.png',
-                    user_data=user_data  # Pass user_data to the template
+                    user_data=user_data  
                 )
             
     
@@ -1124,7 +1121,7 @@ class EmployeeAttendance:
         @self.app.route('/employee/history', methods=['GET'])
         def employee_history():
             if 'username' in session and session['role'] == 'employee':
-                conn = self.ears_db()  # Open the database connection
+                conn = self.ears_db()  
                 cur = conn.cursor()
 
                 # Fetch user details for the navbar or elsewhere
@@ -1177,11 +1174,10 @@ class EmployeeAttendance:
 #------------------------------------------------------------------------------------------------------------------------------
             
             
-    # Function para paandaron ang Flask application
+
     def run(self):
         self.app.run(debug=True)
 
-# Main function para mag-instantiate sang EmployeeAttendance class kag i-run ang Flask app
 if __name__ == "__main__":
     x = EmployeeAttendance(__name__)
     x.run()
